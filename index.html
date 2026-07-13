@@ -82,10 +82,17 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
 #board-pane{ flex:0 0 auto; display:flex; align-items:flex-start; justify-content:center; padding:12px; }
 #right-pane{ flex:1 1 auto; min-width:0; height:100%; overflow-y:auto; padding:10px 16px; display:flex; flex-direction:column; gap:10px; }
 @media (orientation: portrait){
-  #screen-game{ height:auto; overflow:visible; }
-  .game-layout{ flex-direction:column; height:auto; }
-  #board-pane{ padding:8px; }
-  #right-pane{ height:auto; overflow-y:visible; padding:8px 16px 24px; }
+  #screen-game{ height:100vh; height:100dvh; overflow:hidden; }
+  .game-layout{ flex-direction:column; height:100%; }
+  #board-pane{ flex:0 0 auto; padding:6px 8px 2px; }
+  #board-pane .cluedo-board{ width:min(320px,56vh,80vw) !important; }
+  #board-pane .room-card{ min-height:54px; padding:6px 6px 4px; }
+  #board-pane #board-grid{ gap:4px; }
+  #board-pane .room-card .room-name{ font-size:10.5px; }
+  #board-pane .room-card .room-hint{ font-size:7.5px; }
+  #right-pane{ flex:1 1 auto; min-height:0; height:auto; overflow-y:auto; padding:6px 12px 10px; gap:6px; }
+  #notepad{ max-height:120px; overflow-y:auto; }
+  #game-log{ max-height:70px; }
 }
 .room-tokens{ 
   position: relative; 
