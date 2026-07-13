@@ -514,6 +514,8 @@ function makeRoomCode() {
 
 function startHostFlow() {
   Sound.click();
+  isHotSeat = false;
+  myClientId = localStorage.getItem('cluedo-clientId') || myClientId;
   const name = document.getElementById('input-name').value.trim() || 'Player 1';
   roomCode = makeRoomCode();
   isHost = true;
@@ -542,6 +544,8 @@ function startHostFlow() {
 
 function startJoinFlow() {
   Sound.click();
+  isHotSeat = false;
+  myClientId = localStorage.getItem('cluedo-clientId') || myClientId;
   const name = document.getElementById('input-name').value.trim() || 'Player';
   const code = document.getElementById('input-roomcode').value.trim().toUpperCase();
   if (!code) { setHomeStatus('Enter a room code.'); return; }
@@ -660,7 +664,9 @@ function handleHostReceive(conn, msg) {
     return;
   }
   if (msg.type === 'action') {
-    handleAction(msg.clientId || conn._cluedoClientId, msg.action, msg.payload, conn);
+    // Always use the clientId bound to this connection at join time — never the
+    // client-supplied msg.clientId — so one player can't spoof another's turn.
+    handleAction(conn._cluedoClientId, msg.action, msg.payload, conn);
   }
 }
 
@@ -718,6 +724,7 @@ let previousStarted = false;
 
 function applyIncomingState(s) {
   if (!s) return;
+  const justStarted = previousStarted === false && s.started === true;
   const justEnded = previousStarted === true && s.started === false;
   previousStarted = s.started;
   myRenderState = s;
@@ -735,6 +742,15 @@ function applyIncomingState(s) {
   handleSoundEvents(s);
   showScreen('game');
   renderGame();
+
+  // Hot seat: if the randomly-chosen starting player isn't whoever is currently
+  // holding the device, prompt an immediate handover before that turn begins.
+  if (isHotSeat && justStarted) {
+    const current = s.players[s.currentPlayerIndex];
+    if (current && current.clientId !== myClientId) {
+      setTimeout(() => showHotSeatPassScreen(current.name, current.clientId), 300);
+    }
+  }
 }
 
 function handleSoundEvents(s) {
@@ -878,10 +894,12 @@ function handleAction(clientId, action, payload, conn) {
     };
     state.pendingDisprove = null;
 
-    // Find first player after current who can disprove
+    // Find first player after current (going around the table, never the suggester
+    // themselves) who can disprove. Looping only players.length - 1 times covers
+    // every other player exactly once without wrapping back to the suggester.
     let disprover = null;
     let startIdx = (state.currentPlayerIndex + 1) % state.players.length;
-    for (let i = 0; i < state.players.length; i++) {
+    for (let i = 0; i < state.players.length - 1; i++) {
       const idx = (startIdx + i) % state.players.length;
       const p = state.players[idx];
       if (p.isEliminated) continue;
@@ -971,8 +989,15 @@ function handleAction(clientId, action, payload, conn) {
       player.isEliminated = true;
       state.log.push(`${player.name} made a wrong accusation: ${suspectName} with the ${weaponName} in the ${roomName}. They are eliminated.`);
       const active = state.players.filter(p => !p.isEliminated);
-      if (active.length === 1) {
-        endGame(active[0]);
+      if (active.length === 0) {
+        // Everyone has guessed wrong — no one wins, reveal the solution.
+        endGame(null, 'allEliminated');
+      } else if (active.length === 1) {
+        // Being the last one standing does NOT win the game on its own —
+        // they still have to make a correct accusation on their turn.
+        state.log.push(`${active[0].name} is the only player left. They must make a correct accusation to win.`);
+        nextTurn();
+        broadcastState();
       } else {
         nextTurn();
         broadcastState();
@@ -1069,7 +1094,7 @@ function beginGame() {
   broadcastState();
 }
 
-function endGame(winner) {
+function endGame(winner, reason) {
   if (winner) {
     state.log.push(winner.name + ' wins!');
     state.matchHistory.push({
@@ -1077,7 +1102,7 @@ function endGame(winner) {
       playedAt: Date.now()
     });
   } else {
-    state.log.push('Game ended by host.');
+    state.log.push(reason === 'allEliminated' ? 'No winner — the case went unsolved.' : 'Game ended by host.');
   }
   state.started = false;
   broadcastState();
@@ -1266,14 +1291,12 @@ function renderGame() {
   // Game over modal
   if (!s.started && s.solutionRevealed) {
     const winnerEntry = s.log.find(l => l.includes(' wins!'));
-    if (winnerEntry) {
-      document.getElementById('winner-text').innerHTML = winnerEntry + '<br><span class="text-sm text-[#6E6E73]">Solution: ' +
-        getCardById(s.solutionRevealed.suspectId).name + ' with the ' +
-        getCardById(s.solutionRevealed.weaponId).name + ' in the ' +
-        getCardById(s.solutionRevealed.roomId).name + '</span>';
-    } else {
-      document.getElementById('winner-text').textContent = 'Game ended.';
-    }
+    const noSolveEntry = s.log.find(l => l.includes('No winner'));
+    const headline = winnerEntry || noSolveEntry || 'Game ended.';
+    document.getElementById('winner-text').innerHTML = headline + '<br><span class="text-sm text-[#6E6E73]">Solution: ' +
+      getCardById(s.solutionRevealed.suspectId).name + ' with the ' +
+      getCardById(s.solutionRevealed.weaponId).name + ' in the ' +
+      getCardById(s.solutionRevealed.roomId).name + '</span>';
     document.getElementById('winner-modal').classList.remove('hidden');
   }
 
