@@ -33,6 +33,10 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
   transform-style: preserve-3d;
 }
 .board-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px;
   transform: rotateX(11deg) rotateY(-5deg) translateZ(0);
   transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   transform-origin: center center;
@@ -47,6 +51,13 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
   position:relative; 
   overflow:hidden;
   transform-style: preserve-3d;
+  background: #2A3739;
+  border: 1px solid #445456;
+  border-radius: 14px;
+  min-height: 96px;
+  padding: 10px 8px 8px;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 4px 12px rgba(0,0,0,.2),
               0 1px 3px rgba(0,0,0,.15);
 }
@@ -56,6 +67,8 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
               0 4px 8px rgba(0,0,0,.15);
 }
 .room-card.active{ box-shadow:0 0 0 3px var(--apple-blue); }
+.room-card .room-name{ color:#F5F5F7; font-weight:700; font-size:13px; letter-spacing:-0.01em; }
+.room-card .room-hint{ color:#9FB0B2; font-size:9px; margin-top:2px; }
 .room-card .token{ 
   width:22px; 
   height:22px; 
