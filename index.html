@@ -6,29 +6,40 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Cluedo LAN">
-<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Cluedo%20LAN%22%2C%22short_name%22%3A%22Cluedo%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22landscape-primary%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%23F5F5F7%22%2C%22theme_color%22%3A%22%23000000%22%7D">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Cluedo%20LAN%22%2C%22short_name%22%3A%22Cluedo%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22landscape-primary%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%23F6F3FB%22%2C%22theme_color%22%3A%22%237C5CFC%22%7D">
 <meta name="screen-orientation" content="landscape">
+<meta name="theme-color" content="#7C5CFC">
 <title>Cluedo LAN • Multiplayer</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{
-  --apple-blue:#0071E3; --apple-blue-dark:#0059B3;
-  --apple-green:#34C759; --apple-red:#FF3B30; --apple-orange:#FF9F0A;
-  --apple-gray:#8E8E93; --apple-gray-bg:#F5F5F7; --apple-gray-line:#D2D2D7;
-  --apple-ink:#1D1D1F; --apple-ink-secondary:#6E6E73;
-  --cluedo-red:#C41E3A; --cluedo-gold:#D4AF37;
+  /* Brand palette — mystery/detective, warm and playful rather than moody */
+  --canvas:#F6F3FB; --panel:#FFFFFF;
+  --ink:#21212B; --ink-soft:#6B6B76;
+  --line:#E7E2F4;
+  --violet:#7C5CFC; --violet-dark:#6142E0; --violet-tint:#EFEAFF;
+  --coral:#FF5C72; --coral-dark:#E6455C; --coral-tint:#FFE9EC;
+  --gold:#FFB020; --gold-dark:#E69A0C; --gold-tint:#FFF3D9;
+  --mint:#2FD97C; --mint-dark:#1FBE68; --mint-tint:#E3FBEE;
+  --apple-gray-line:#E7E2F4;
 }
-*{ font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',system-ui,sans-serif; }
+*{ font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif; }
 h1,h3,p{ font-size:1em; margin:0; }
-body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoothing:antialiased; }
-.scrabble-font{ font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif; font-weight:700; letter-spacing:-0.02em; }
-.cluedo-board{ 
-  background:#1C2526; 
-  border:1px solid #3A4A4C; 
-  box-shadow:0 25px 60px -15px rgba(0,0,0,.45), 
-             0 10px 20px -8px rgba(0,0,0,.3);
+body{ background:var(--canvas); color:var(--ink); -webkit-font-smoothing:antialiased; }
+.display-font{ font-family:'Fredoka',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; font-weight:600; letter-spacing:-0.01em; }
+.scrabble-font{ font-family:'Fredoka',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; font-weight:700; letter-spacing:-0.01em; }
+
+/* ---------- Board ---------- */
+.cluedo-board{
+  background:linear-gradient(180deg,#FFFFFF,#FBF9FF);
+  border:1px solid var(--line);
+  box-shadow:0 20px 45px -20px rgba(124,92,252,.28),
+             0 6px 16px -6px rgba(33,33,43,.08);
 }
 .board-grid {
   display: grid;
@@ -36,47 +47,47 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
   grid-template-rows: repeat(3, 1fr);
   gap: 8px;
 }
-.room-card{ 
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; 
-  cursor:pointer; 
-  position:relative; 
+.room-card{
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  cursor:pointer;
+  position:relative;
   overflow:hidden;
-  background: #2A3739;
-  border: 1px solid #445456;
-  border-radius: 14px;
+  background: #F3F0FB;
+  border: 2px solid transparent;
+  border-radius: 18px;
   min-height: 96px;
-  padding: 10px 8px 8px;
+  padding: 8px 8px 6px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0,0,0,.2),
-              0 1px 3px rgba(0,0,0,.15);
 }
-.room-card:hover{ 
-  transform: translateY(-2px) scale(1.015);
-  box-shadow: 0 12px 24px rgba(0,0,0,.25),
-              0 4px 8px rgba(0,0,0,.15);
+.room-card:hover{
+  transform: translateY(-2px) scale(1.02);
 }
-.room-card.active{ box-shadow:0 0 0 3px var(--apple-blue); }
-.room-card .room-name{ color:#F5F5F7; font-weight:700; font-size:13px; letter-spacing:-0.01em; }
-.room-card .room-hint{ color:#9FB0B2; font-size:9px; margin-top:2px; }
-.room-card .token{ 
-  width:22px; 
-  height:22px; 
-  border:2px solid #fff; 
-  box-shadow:0 2px 6px rgba(0,0,0,.35), 
-             0 1px 2px rgba(0,0,0,.2);
-  font-size:9px; 
+.room-card .room-icon{
+  width:26px; height:26px; border-radius:9px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; flex-shrink:0; margin-bottom:4px;
+  box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+.room-card .room-name{ color:var(--ink); font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; letter-spacing:-0.01em; }
+.room-card .room-hint{ color:var(--ink-soft); font-size:8.5px; margin-top:1px; font-weight:600; }
+.room-card .token{
+  width:24px;
+  height:24px;
+  border:2.5px solid #fff;
+  box-shadow:0 2px 6px rgba(33,33,43,.25);
+  font-size:9.5px;
   font-weight:700;
-  transform: translateZ(8px);
+  font-family:'Fredoka',sans-serif;
 }
-.card-chip{ background:#fff; border:1px solid var(--apple-gray-line); border-radius:12px; padding:8px 12px; font-size:13px; display:flex; align-items:center; gap:8px; }
-.card-chip.suspect{ border-left:4px solid #C41E3A; }
-.card-chip.weapon{ border-left:4px solid #4A90A4; }
-.card-chip.room{ border-left:4px solid #6B5B95; }
+.card-chip{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:9px 13px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px; box-shadow:0 1px 2px rgba(33,33,43,.04); }
+.card-chip.suspect{ border-left:4px solid var(--coral); }
+.card-chip.weapon{ border-left:4px solid var(--violet); }
+.card-chip.room{ border-left:4px solid var(--gold-dark); }
 .modal{ animation:modalPop .2s ease-out; }
 @keyframes modalPop{ from{transform:scale(.9);opacity:0;} to{transform:scale(1);opacity:1;} }
 .tile{ transition:transform .1s, box-shadow .1s; }
-.tile.selected{ box-shadow:0 0 0 3px var(--apple-blue); transform:translateY(-2px); }
+.tile.selected{ box-shadow:0 0 0 3px var(--violet); transform:translateY(-2px); }
 #screen-game{ height:100vh; height:100dvh; overflow:hidden; }
 .game-layout{ height:100%; display:flex; flex-direction:row; align-items:stretch; }
 #board-pane{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; padding:12px; overflow-y:auto; }
@@ -88,6 +99,7 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
   #board-pane .cluedo-board{ width:min(280px,42vh,78vw) !important; }
   #board-pane .room-card{ min-height:48px; padding:5px 5px 3px; }
   #board-pane #board-grid{ gap:4px; }
+  #board-pane .room-card .room-icon{ width:18px; height:18px; font-size:9px; margin-bottom:2px; }
   #board-pane .room-card .room-name{ font-size:10px; }
   #board-pane .room-card .room-hint{ font-size:7px; }
   #board-pane button{ padding-top:8px; padding-bottom:8px; font-size:13px; }
@@ -96,96 +108,96 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
   #notepad{ max-height:110px; overflow-y:auto; }
   #game-log{ max-height:60px; }
 }
-.room-tokens{ 
-  position: relative; 
-  display: flex; 
-  justify-content: center; 
+.room-tokens{
+  position: relative;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  min-height: 38px;
-  margin-top: 2px;
+  min-height: 30px;
+  margin-top: auto;
   width: 100%;
-  perspective: 400px;
 }
-.room-card.highlight-move{ box-shadow:0 0 0 3px #34C759, 0 4px 12px rgba(52,199,89,.3); border-color:#34C759; }
-.room-card.current-room{ box-shadow:0 0 0 3px var(--cluedo-gold), 0 4px 14px rgba(212,175,55,.35); border-color:var(--cluedo-gold); background:#33372A; }
-.room-card.current-room .room-name{ color:var(--cluedo-gold); }
-.room-card .secret-passage{ position:absolute; top:4px; right:4px; font-size:10px; background:#6B5B95; color:white; padding:1px 5px; border-radius:6px; }
-.score-badge{ background:#FFFFFF; border:1px solid var(--apple-gray-line); color:var(--apple-ink); box-shadow:0 1px 2px rgba(0,0,0,.05); }
-#rotate-overlay{ position:fixed; inset:0; background:#1D1D1F; color:#fff; z-index:999; display:none; align-items:center; justify-content:center; text-align:center; padding:32px; }
+.room-card.highlight-move{ border-color:var(--mint); box-shadow:0 0 0 3px rgba(47,217,124,.28), 0 6px 16px -4px rgba(47,217,124,.35); }
+.room-card.highlight-move .room-hint{ color:var(--mint-dark); }
+.room-card.current-room{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(255,176,32,.28), 0 6px 16px -4px rgba(255,176,32,.35); }
+.room-card.current-room .room-name{ color:var(--gold-dark); }
+.room-card .secret-passage{ position:absolute; top:6px; right:6px; font-size:10px; background:var(--violet); color:white; padding:1px 6px; border-radius:8px; font-weight:700; }
+.score-badge{ background:#FFFFFF; border:1px solid var(--line); color:var(--ink); box-shadow:0 1px 3px rgba(33,33,43,.06); }
+#rotate-overlay{ position:fixed; inset:0; background:var(--ink); color:#fff; z-index:999; display:none; align-items:center; justify-content:center; text-align:center; padding:32px; }
 @media (orientation: portrait){ #rotate-overlay.enabled{ display:flex; } }
 .rotate-icon{ animation:rotateHint 1.8s ease-in-out infinite; }
 @keyframes rotateHint{ 0%,100%{ transform:rotate(0deg); } 50%{ transform:rotate(90deg); } }
 </style>
 </head>
-<body class="bg-[#F5F5F7] text-[#1D1D1F] min-h-screen">
+<body class="bg-[#F6F3FB] text-[#21212B] min-h-screen">
 
 <div id="rotate-overlay">
   <div>
     <i class="fa-solid fa-mobile-screen rotate-icon text-6xl mb-4 block"></i>
-    <div class="text-xl font-semibold mb-2">Rotate your iPad</div>
-    <div class="text-sm text-[#8E8E93] mb-5">Cluedo LAN works best in landscape</div>
-    <button onclick="dismissRotateOverlay()" class="px-5 py-2 bg-white text-[#1D1D1F] rounded-full font-semibold text-sm">Continue in portrait</button>
+    <div class="display-font text-xl mb-2">Turn me sideways!</div>
+    <div class="text-sm text-[#B8AEE0] mb-5">Cluedo LAN is more fun in landscape</div>
+    <button onclick="dismissRotateOverlay()" class="px-5 py-2 bg-white text-[#21212B] rounded-full font-semibold text-sm">Keep playing this way</button>
   </div>
 </div>
 
 <!-- ============ SCREEN: HOME ============ -->
 <div id="screen-home" class="screen flex items-center justify-center p-6">
   <div class="max-w-md w-full text-center">
-    <div class="w-20 h-20 mx-auto bg-[#1C2526] rounded-[22px] flex items-center justify-center shadow-lg mb-4">
-      <i class="fa-solid fa-search text-white text-4xl"></i>
+    <div class="w-20 h-20 mx-auto rounded-[26px] flex items-center justify-center shadow-lg mb-4" style="background:linear-gradient(155deg,#7C5CFC,#6142E0);">
+      <i class="fa-solid fa-magnifying-glass text-white text-4xl"></i>
     </div>
-    <h1 class="scrabble-font text-4xl mb-1">Cluedo LAN</h1>
-    <p class="text-[#6E6E73] mb-8">Multiplayer deduction on the same wifi — no server needed</p>
+    <h1 class="display-font text-4xl mb-1">Cluedo LAN</h1>
+    <p class="text-[#6B6B76] mb-8">A mystery for the whole family — no internet needed to play</p>
 
-    <div class="bg-white rounded-3xl shadow-sm border border-[#D2D2D7] p-6 space-y-4">
-      <input id="input-name" maxlength="16" placeholder="Your name" class="w-full text-center text-lg py-3 px-4 rounded-2xl border border-[#D2D2D7] focus:border-[#0071E3] outline-none">
+    <div class="bg-white rounded-3xl shadow-sm border border-[#E7E2F4] p-6 space-y-4">
+      <input id="input-name" maxlength="16" placeholder="What's your name?" class="w-full text-center text-lg py-3 px-4 rounded-2xl border-2 border-[#E7E2F4] focus:border-[#7C5CFC] outline-none">
 
-      <button onclick="startHostFlow()" class="w-full py-4 bg-[#C41E3A] text-white rounded-2xl font-semibold text-lg active:scale-[0.98]">
-        <i class="fa-solid fa-house mr-2"></i>Host LAN Game
+      <button onclick="startHostFlow()" class="w-full py-4 bg-[#FF5C72] text-white rounded-2xl font-semibold text-lg active:scale-[0.98] shadow-[0_8px_20px_-8px_rgba(255,92,114,.6)]">
+        <i class="fa-solid fa-house mr-2"></i>Host a Game
       </button>
 
-      <button onclick="startHotSeatFlow()" class="w-full py-4 bg-[#16A34A] text-white rounded-2xl font-semibold text-lg active:scale-[0.98]">
-        <i class="fa-solid fa-users mr-2"></i>Hot Seat (Pass &amp; Play)
+      <button onclick="startHotSeatFlow()" class="w-full py-4 bg-[#2FD97C] text-white rounded-2xl font-semibold text-lg active:scale-[0.98] shadow-[0_8px_20px_-8px_rgba(47,217,124,.6)]">
+        <i class="fa-solid fa-users mr-2"></i>Pass &amp; Play
       </button>
 
-      <div class="flex items-center gap-x-2 text-[#8E8E93] text-xs mt-2">
-        <div class="h-px bg-[#D2D2D7] flex-1"></div>OR<div class="h-px bg-[#D2D2D7] flex-1"></div>
+      <div class="flex items-center gap-x-2 text-[#9A93B5] text-xs mt-2">
+        <div class="h-px bg-[#E7E2F4] flex-1"></div>OR<div class="h-px bg-[#E7E2F4] flex-1"></div>
       </div>
 
-      <input id="input-roomcode" maxlength="6" placeholder="ROOM CODE" class="w-full text-center text-2xl tracking-widest font-semibold py-3 px-4 rounded-2xl border border-[#D2D2D7] focus:border-[#0071E3] outline-none uppercase">
-      <button onclick="startJoinFlow()" class="w-full py-4 bg-[#1D1D1F] text-white rounded-2xl font-semibold text-lg active:scale-[0.98]">
-        <i class="fa-solid fa-right-to-bracket mr-2"></i>Join LAN Game
+      <input id="input-roomcode" maxlength="6" placeholder="ROOM CODE" class="w-full text-center text-2xl tracking-widest font-semibold py-3 px-4 rounded-2xl border-2 border-[#E7E2F4] focus:border-[#7C5CFC] outline-none uppercase">
+      <button onclick="startJoinFlow()" class="w-full py-4 bg-[#21212B] text-white rounded-2xl font-semibold text-lg active:scale-[0.98]">
+        <i class="fa-solid fa-right-to-bracket mr-2"></i>Join a Game
       </button>
     </div>
 
-    <p id="home-status" class="mt-4 text-sm text-[#6E6E73] min-h-[20px] whitespace-pre-line text-left"></p>
-    <p class="mt-6 text-xs text-[#8E8E93]">First connection needs internet briefly. Gameplay then runs over your wifi.</p>
+    <p id="home-status" class="mt-4 text-sm text-[#6B6B76] min-h-[20px] whitespace-pre-line text-left"></p>
+    <p class="mt-6 text-xs text-[#9A93B5]">First connection needs internet briefly. Gameplay then runs over your wifi.</p>
   </div>
 </div>
 
 <!-- ============ SCREEN: LOBBY ============ -->
 <div id="screen-lobby" class="screen hidden flex items-center justify-center p-6">
   <div class="max-w-md w-full text-center">
-    <p class="text-[#6E6E73] mb-1">Room code</p>
-    <div id="lobby-roomcode" class="text-6xl font-bold tracking-widest scrabble-font mb-6 text-[#1D1D1F]">----</div>
+    <p class="text-[#6B6B76] mb-1">Room code</p>
+    <div id="lobby-roomcode" class="text-6xl display-font tracking-widest mb-6 text-[#21212B]">----</div>
 
-    <div class="bg-white rounded-3xl shadow-sm border border-[#D2D2D7] p-6">
-      <h3 class="font-semibold text-lg mb-3 text-left">Players</h3>
+    <div class="bg-white rounded-3xl shadow-sm border border-[#E7E2F4] p-6">
+      <h3 class="display-font text-lg mb-3 text-left">Detectives joining</h3>
       <div id="lobby-players" class="space-y-2 text-left mb-4"></div>
 
-      <div class="bg-[#F5F5F7] rounded-2xl p-4 mb-4 text-left">
-        <div class="text-sm font-semibold mb-1">How to play</div>
-        <div class="text-xs text-[#6E6E73] leading-snug">
-          Move around the mansion, make suggestions in the room you're in, and try to deduce who committed the murder, with which weapon, and in which room. First correct accusation wins.
+      <div class="bg-[#F6F3FB] rounded-2xl p-4 mb-4 text-left">
+        <div class="text-sm font-semibold mb-1">🕵️ How to play</div>
+        <div class="text-xs text-[#6B6B76] leading-snug">
+          Move around the mansion, make suggestions in the room you're in, and try to figure out who did it, with which weapon, and in which room. First correct guess wins!
         </div>
       </div>
 
-      <button id="btn-start-game" onclick="hostStartGame()" class="w-full py-4 bg-[#C41E3A] text-white rounded-2xl font-semibold text-lg disabled:opacity-40" disabled>
+      <button id="btn-start-game" onclick="hostStartGame()" class="w-full py-4 bg-[#FF5C72] text-white rounded-2xl font-semibold text-lg disabled:opacity-40" disabled>
         Start Game
       </button>
-      <p id="lobby-note" class="text-xs text-[#8E8E93] mt-3">Need at least 3 players to start (max 6).</p>
+      <p id="lobby-note" class="text-xs text-[#9A93B5] mt-3">Need at least 3 players to start (max 6).</p>
     </div>
-    <p id="lobby-status" class="mt-4 text-sm text-[#6E6E73] min-h-[20px]"></p>
+    <p id="lobby-status" class="mt-4 text-sm text-[#6B6B76] min-h-[20px]"></p>
   </div>
 </div>
 
@@ -196,41 +208,41 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
       <div class="cluedo-board rounded-3xl p-3 w-[min(520px,92vw)]">
         <div class="flex items-center justify-between px-2 pb-2">
           <div>
-            <div class="font-bold text-white text-lg">Tudor Mansion</div>
-            <div class="text-[#A0B0B2] text-xs">Cluedo • LAN</div>
+            <div class="display-font text-[#21212B] text-lg">Tudor Mansion</div>
+            <div class="text-[#9A93B5] text-xs font-semibold">🔍 Find the culprit</div>
           </div>
-          <div id="dice-display" class="hidden w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-4xl font-black text-[#1C2526] shadow-inner">6</div>
+          <div id="dice-display" class="hidden w-14 h-14 bg-[#7C5CFC] rounded-2xl flex items-center justify-center text-4xl display-font text-white shadow-lg">6</div>
         </div>
         <div id="board-grid" class="board-grid"></div>
-        <div class="px-2 pt-2 text-[10px] text-[#A0B0B2] flex justify-between">
-          <div>Click a room on your turn to move there</div>
-          <div>Secret passages: Kitchen ↔ Study, Conservatory ↔ Lounge</div>
+        <div class="px-2 pt-2 text-[10px] text-[#9A93B5] font-semibold flex justify-between">
+          <div>Tap a room on your turn to move there</div>
+          <div>🔀 Kitchen ↔ Study · Conservatory ↔ Lounge</div>
         </div>
       </div>
 
       <div class="w-[min(520px,92vw)] mt-3">
         <!-- Actions -->
         <div class="flex flex-wrap gap-2">
-          <button onclick="clickRollDice()" id="btn-roll" class="flex-1 px-4 py-2.5 bg-[#1C2526] text-white rounded-2xl font-semibold text-sm active:scale-[0.98] disabled:opacity-40">
+          <button onclick="clickRollDice()" id="btn-roll" class="flex-1 px-4 py-2.5 bg-[#7C5CFC] text-white rounded-2xl font-semibold text-sm active:scale-[0.98] disabled:opacity-40">
             <i class="fa-solid fa-dice mr-2"></i>Roll Dice
           </button>
-          <button onclick="clickMakeSuggestion()" id="btn-suggest" class="flex-1 px-4 py-2.5 bg-[#C41E3A] text-white rounded-2xl font-semibold text-sm active:scale-[0.98] disabled:opacity-40">
-            <i class="fa-solid fa-comment-dots mr-2"></i>Suggestion
+          <button onclick="clickMakeSuggestion()" id="btn-suggest" class="flex-1 px-4 py-2.5 bg-[#FF5C72] text-white rounded-2xl font-semibold text-sm active:scale-[0.98] disabled:opacity-40">
+            <i class="fa-solid fa-comment-dots mr-2"></i>Suggest
           </button>
-          <button onclick="clickMakeAccusation()" id="btn-accuse" class="flex-1 px-4 py-2.5 bg-white border border-[#D2D2D7] text-[#1D1D1F] rounded-2xl font-semibold text-sm active:scale-[0.98] disabled:opacity-40">
-            <i class="fa-solid fa-gavel mr-2"></i>Accusation
+          <button onclick="clickMakeAccusation()" id="btn-accuse" class="flex-1 px-4 py-2.5 bg-white border-2 border-[#21212B] text-[#21212B] rounded-2xl font-semibold text-sm active:scale-[0.98] disabled:opacity-40">
+            <i class="fa-solid fa-gavel mr-2"></i>Accuse
           </button>
-          <button onclick="clickEndTurn()" id="btn-pass" class="px-4 py-2.5 bg-[#F5F5F7] text-[#1D1D1F] border border-[#D2D2D7] rounded-2xl font-semibold text-sm active:scale-[0.98] disabled:opacity-40">
+          <button onclick="clickEndTurn()" id="btn-pass" class="px-4 py-2.5 bg-[#F0ECFA] text-[#21212B] rounded-2xl font-semibold text-sm active:scale-[0.98] disabled:opacity-40">
             End Turn
           </button>
         </div>
 
-        <p id="status-line" class="text-center text-sm min-h-[18px] font-semibold text-[#6E6E73] mt-1"></p>
+        <p id="status-line" class="text-center text-sm min-h-[18px] font-semibold text-[#6B6B76] mt-1"></p>
 
         <!-- Log -->
         <div class="mt-2">
-          <div class="text-xs uppercase tracking-wider text-[#8E8E93] mb-1 px-1">Game Log</div>
-          <div id="game-log" class="bg-white border border-[#D2D2D7] rounded-2xl p-3 text-xs max-h-[120px] overflow-y-auto space-y-1 font-mono"></div>
+          <div class="text-xs uppercase tracking-wider text-[#9A93B5] font-bold mb-1 px-1">📋 Case File</div>
+          <div id="game-log" class="bg-white border border-[#E7E2F4] rounded-2xl p-3 text-xs max-h-[120px] overflow-y-auto space-y-1"></div>
         </div>
       </div>
     </div>
@@ -238,32 +250,32 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
     <div id="right-pane">
       <div class="flex items-center justify-between gap-x-2">
         <div class="flex items-center gap-x-2">
-          <div class="w-9 h-9 bg-[#1C2526] rounded-xl flex items-center justify-center flex-shrink-0">
-            <i class="fa-solid fa-search text-white text-lg"></i>
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(155deg,#7C5CFC,#6142E0);">
+            <i class="fa-solid fa-magnifying-glass text-white text-lg"></i>
           </div>
           <div>
-            <h1 class="scrabble-font text-base leading-tight">Cluedo</h1>
-            <p id="connection-badge" class="text-[9px] text-[#34C759] font-medium leading-tight">● connected</p>
+            <h1 class="display-font text-base leading-tight">Cluedo</h1>
+            <p id="connection-badge" class="text-[9px] text-[#2FD97C] font-semibold leading-tight">● connected</p>
           </div>
         </div>
         <div class="flex items-center gap-x-2">
-          <button onclick="toggleSound()" class="w-8 h-8 rounded-full bg-[#F5F5F7] flex items-center justify-center flex-shrink-0"><i id="sound-toggle-icon" class="fa-solid fa-volume-high text-[#1D1D1F] text-xs"></i></button>
-          <button id="btn-end-game" onclick="hostEndGame()" class="hidden text-[10px] px-3 py-1.5 rounded-full bg-[#FFE1DE] text-[#C4281B] font-semibold flex-shrink-0">End Game</button>
+          <button onclick="toggleSound()" class="w-8 h-8 rounded-full bg-[#F0ECFA] flex items-center justify-center flex-shrink-0"><i id="sound-toggle-icon" class="fa-solid fa-volume-high text-[#21212B] text-xs"></i></button>
+          <button id="btn-end-game" onclick="hostEndGame()" class="hidden text-[10px] px-3 py-1.5 rounded-full bg-[#FFE9EC] text-[#E6455C] font-semibold flex-shrink-0">End Game</button>
         </div>
       </div>
 
-      <div id="turn-indicator" class="text-base font-semibold text-center py-1"></div>
+      <div id="turn-indicator" class="display-font text-base text-center py-1"></div>
 
       <div id="scoreboard" class="flex flex-wrap gap-1.5"></div>
 
-      <div id="my-turn-banner" class="hidden text-center font-semibold text-[#C41E3A] text-sm py-0.5">Your turn — move or make a suggestion</div>
-      <div id="waiting-banner" class="text-center font-semibold text-[#8E8E93] text-sm">Waiting for turn...</div>
+      <div id="my-turn-banner" class="hidden text-center font-semibold text-[#FF5C72] text-sm py-0.5">🕵️ Your turn — move or make a suggestion</div>
+      <div id="waiting-banner" class="text-center font-semibold text-[#9A93B5] text-sm">Waiting for your turn...</div>
 
       <!-- Your Hand -->
       <div>
         <div class="flex items-center justify-between mb-1.5 px-1">
-          <div class="text-sm font-semibold">Your Hand</div>
-          <div id="hand-count" class="text-xs text-[#8E8E93]"></div>
+          <div class="text-sm font-semibold">🃏 Your Hand</div>
+          <div id="hand-count" class="text-xs text-[#9A93B5] font-semibold"></div>
         </div>
         <div id="my-hand" class="flex flex-wrap gap-1.5 min-h-[42px]"></div>
       </div>
@@ -272,19 +284,19 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
       <div>
         <div class="flex items-center justify-between mb-1.5 px-1">
           <div class="text-sm font-semibold flex items-center gap-x-1.5">
-            <i class="fa-solid fa-clipboard-list text-[#6B5B95]"></i>
+            <i class="fa-solid fa-clipboard-list text-[#7C5CFC]"></i>
             <span>My Notes</span>
           </div>
-          <button onclick="clearNotepad()" class="text-xs text-[#8E8E93] hover:text-[#C41E3A]">Clear</button>
+          <button onclick="clearNotepad()" class="text-xs text-[#9A93B5] hover:text-[#FF5C72] font-semibold">Clear</button>
         </div>
-        <div id="notepad" class="bg-white border border-[#D2D2D7] rounded-2xl p-3 text-xs"></div>
+        <div id="notepad" class="bg-white border border-[#E7E2F4] rounded-2xl p-3 text-xs"></div>
       </div>
 
       <!-- Pending Disprove UI -->
-      <div id="disprove-section" class="hidden bg-white border border-[#D2D2D7] rounded-2xl p-4">
-        <div class="font-semibold text-sm mb-2">Disprove this suggestion:</div>
-        <div id="disprove-suggestion-text" class="text-xs mb-3 text-[#6E6E73]"></div>
-        <div class="text-xs font-medium mb-1.5">Choose one card to show privately:</div>
+      <div id="disprove-section" class="hidden bg-white border-2 border-[#FFB020] rounded-2xl p-4">
+        <div class="font-semibold text-sm mb-2">🕵️ Disprove this suggestion:</div>
+        <div id="disprove-suggestion-text" class="text-xs mb-3 text-[#6B6B76]"></div>
+        <div class="text-xs font-semibold mb-1.5">Choose one card to show privately:</div>
         <div id="disprove-options" class="flex flex-wrap gap-2"></div>
       </div>
     </div>
@@ -294,30 +306,30 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
 <!-- Suggestion Modal -->
 <div id="suggestion-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
   <div class="modal bg-white max-w-lg w-full rounded-3xl p-5">
-    <h3 class="font-semibold text-xl mb-1 text-center">Make a Suggestion</h3>
-    <p class="text-center text-sm text-[#6E6E73] mb-4">You must be in the room you suggest</p>
+    <h3 class="display-font text-xl mb-1 text-center">Make a Suggestion</h3>
+    <p class="text-center text-sm text-[#6B6B76] mb-4">You must be in the room you suggest</p>
 
     <div class="mb-4">
-      <div class="text-xs font-semibold mb-1.5 text-[#8E8E93]">CURRENT ROOM</div>
-      <div id="suggestion-current-room" class="bg-[#F5F5F7] border border-[#D2D2D7] rounded-2xl px-4 py-3 font-semibold text-center"></div>
+      <div class="text-xs font-bold mb-1.5 text-[#9A93B5]">CURRENT ROOM</div>
+      <div id="suggestion-current-room" class="bg-[#F6F3FB] border-2 border-[#E7E2F4] rounded-2xl px-4 py-3 font-semibold text-center"></div>
     </div>
 
     <div class="grid grid-cols-2 gap-4">
       <!-- Suspects -->
       <div>
-        <div class="text-xs font-semibold mb-1.5 text-[#8E8E93]">SUSPECT</div>
+        <div class="text-xs font-bold mb-1.5 text-[#9A93B5]">SUSPECT</div>
         <div id="suggestion-suspects" class="grid grid-cols-2 gap-2"></div>
       </div>
       <!-- Weapons -->
       <div>
-        <div class="text-xs font-semibold mb-1.5 text-[#8E8E93]">WEAPON</div>
+        <div class="text-xs font-bold mb-1.5 text-[#9A93B5]">WEAPON</div>
         <div id="suggestion-weapons" class="grid grid-cols-2 gap-2"></div>
       </div>
     </div>
 
     <div class="flex gap-x-3 mt-5">
-      <button onclick="submitSuggestion()" class="flex-1 py-3 bg-[#C41E3A] text-white rounded-2xl font-semibold">Make Suggestion</button>
-      <button onclick="closeSuggestionModal()" class="flex-1 py-3 bg-[#F5F5F7] rounded-2xl font-semibold">Cancel</button>
+      <button onclick="submitSuggestion()" class="flex-1 py-3 bg-[#FF5C72] text-white rounded-2xl font-semibold">Make Suggestion</button>
+      <button onclick="closeSuggestionModal()" class="flex-1 py-3 bg-[#F6F3FB] rounded-2xl font-semibold">Cancel</button>
     </div>
   </div>
 </div>
@@ -325,27 +337,27 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
 <!-- Accusation Modal -->
 <div id="accusation-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
   <div class="modal bg-white max-w-lg w-full rounded-3xl p-5">
-    <h3 class="font-semibold text-xl mb-3 text-center">Make an Accusation</h3>
-    <p class="text-center text-sm text-[#6E6E73] mb-4">If correct you win. If wrong you are eliminated.</p>
+    <h3 class="display-font text-xl mb-3 text-center">Make an Accusation</h3>
+    <p class="text-center text-sm text-[#6B6B76] mb-4">Guess right and you win. Guess wrong and you're out!</p>
 
     <div class="grid grid-cols-3 gap-3">
       <div>
-        <div class="text-xs font-semibold mb-1.5 text-[#8E8E93]">SUSPECT</div>
+        <div class="text-xs font-bold mb-1.5 text-[#9A93B5]">SUSPECT</div>
         <div id="accuse-suspects" class="space-y-1.5"></div>
       </div>
       <div>
-        <div class="text-xs font-semibold mb-1.5 text-[#8E8E93]">WEAPON</div>
+        <div class="text-xs font-bold mb-1.5 text-[#9A93B5]">WEAPON</div>
         <div id="accuse-weapons" class="space-y-1.5"></div>
       </div>
       <div>
-        <div class="text-xs font-semibold mb-1.5 text-[#8E8E93]">ROOM</div>
+        <div class="text-xs font-bold mb-1.5 text-[#9A93B5]">ROOM</div>
         <div id="accuse-rooms" class="space-y-1.5"></div>
       </div>
     </div>
 
     <div class="flex gap-x-3 mt-5">
-      <button onclick="submitAccusation()" class="flex-1 py-3 bg-[#1C2526] text-white rounded-2xl font-semibold">Accuse</button>
-      <button onclick="closeAccusationModal()" class="flex-1 py-3 bg-[#F5F5F7] rounded-2xl font-semibold">Cancel</button>
+      <button onclick="submitAccusation()" class="flex-1 py-3 bg-[#21212B] text-white rounded-2xl font-semibold">Accuse</button>
+      <button onclick="closeAccusationModal()" class="flex-1 py-3 bg-[#F6F3FB] rounded-2xl font-semibold">Cancel</button>
     </div>
   </div>
 </div>
@@ -353,34 +365,34 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
 <!-- Winner / Game Over Modal -->
 <div id="winner-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
   <div class="modal bg-white max-w-sm w-full rounded-3xl p-6 text-center">
-    <i class="fa-solid fa-trophy text-5xl text-[#FF9F0A] mb-3"></i>
-    <h3 class="font-semibold text-2xl mb-2">Game Over</h3>
+    <i class="fa-solid fa-trophy text-5xl text-[#FFB020] mb-3"></i>
+    <h3 class="display-font text-2xl mb-2">Case Closed!</h3>
     <div id="winner-text" class="text-lg mb-4"></div>
-    <button onclick="closeWinnerModal()" class="w-full py-3 bg-[#1C2526] text-white rounded-2xl font-semibold">Back to Lobby</button>
+    <button onclick="closeWinnerModal()" class="w-full py-3 bg-[#21212B] text-white rounded-2xl font-semibold">Back to Lobby</button>
   </div>
 </div>
 
 <!-- Private card shown modal -->
 <div id="private-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[250] p-4">
   <div class="modal bg-white max-w-xs w-full rounded-3xl p-5 text-center">
-    <div class="text-sm text-[#8E8E93] mb-1">Someone showed you a card</div>
-    <div id="private-card-text" class="text-2xl font-bold mb-4"></div>
-    <button onclick="closePrivateModal()" class="w-full py-2.5 bg-[#F5F5F7] rounded-2xl font-semibold">Got it</button>
+    <div class="text-sm text-[#9A93B5] mb-1">Someone showed you a card</div>
+    <div id="private-card-text" class="text-2xl display-font mb-4"></div>
+    <button onclick="closePrivateModal()" class="w-full py-2.5 bg-[#F6F3FB] rounded-2xl font-semibold">Got it</button>
   </div>
 </div>
 
 <!-- Hot Seat Pass Device Overlay -->
-<div id="hotseat-pass-overlay" class="hidden fixed inset-0 bg-[#1C2526] z-[300] flex items-center justify-center p-6">
+<div id="hotseat-pass-overlay" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-6" style="background:linear-gradient(155deg,#21212B,#3A2E6B);">
   <div class="text-center max-w-sm">
     <i class="fa-solid fa-handshake text-6xl text-white mb-6"></i>
-    <div class="text-white text-3xl font-bold mb-2">Pass the iPad</div>
-    <div id="hotseat-pass-text" class="text-[#A0B0B2] text-xl mb-8"></div>
+    <div class="text-white display-font text-3xl mb-2">Pass the iPad</div>
+    <div id="hotseat-pass-text" class="text-[#C9BFF0] text-xl mb-8"></div>
 
     <button onclick="confirmHotSeatHandover()" 
-            class="w-full py-4 bg-white text-[#1C2526] rounded-2xl font-bold text-lg active:scale-[0.985]">
+            class="w-full py-4 bg-white text-[#21212B] rounded-2xl font-bold text-lg active:scale-[0.985]">
       I'm ready — show my turn
     </button>
-    <p class="text-[#6E6E73] text-xs mt-4">Your hand and notes are private</p>
+    <p class="text-[#C9BFF0] text-xs mt-4">Your hand and notes are private</p>
   </div>
 </div>
 
@@ -401,25 +413,27 @@ const SUSPECTS = [
 ];
 
 const WEAPONS = [
-  { id: 'candlestick', name: 'Candlestick' },
-  { id: 'dagger', name: 'Dagger' },
-  { id: 'leadpipe', name: 'Lead Pipe' },
-  { id: 'revolver', name: 'Revolver' },
-  { id: 'rope', name: 'Rope' },
-  { id: 'spanner', name: 'Spanner' }
+  { id: 'candlestick', name: 'Candlestick', icon: 'fa-solid fa-fire' },
+  { id: 'dagger', name: 'Dagger', icon: 'fa-solid fa-khanda' },
+  { id: 'leadpipe', name: 'Lead Pipe', icon: 'fa-solid fa-grip-lines' },
+  { id: 'revolver', name: 'Revolver', icon: 'fa-solid fa-crosshairs' },
+  { id: 'rope', name: 'Rope', icon: 'fa-solid fa-link' },
+  { id: 'spanner', name: 'Spanner', icon: 'fa-solid fa-wrench' }
 ];
 
 const ROOMS = [
-  { id: 'kitchen', name: 'Kitchen' },
-  { id: 'ballroom', name: 'Ballroom' },
-  { id: 'conservatory', name: 'Conservatory' },
-  { id: 'dining', name: 'Dining Room' },
-  { id: 'billiard', name: 'Billiard Room' },
-  { id: 'library', name: 'Library' },
-  { id: 'lounge', name: 'Lounge' },
-  { id: 'hall', name: 'Hall' },
-  { id: 'study', name: 'Study' }
+  { id: 'kitchen', name: 'Kitchen', icon: 'fa-solid fa-utensils', bg: '#FFE4D1', iconColor: '#FF8A3D' },
+  { id: 'ballroom', name: 'Ballroom', icon: 'fa-solid fa-music', bg: '#F5DFFF', iconColor: '#B24FE0' },
+  { id: 'conservatory', name: 'Conservatory', icon: 'fa-solid fa-leaf', bg: '#DFFCEF', iconColor: '#17B87A' },
+  { id: 'dining', name: 'Dining Room', icon: 'fa-solid fa-champagne-glasses', bg: '#FFD9E0', iconColor: '#FF4D77' },
+  { id: 'billiard', name: 'Billiard Room', icon: 'fa-solid fa-circle-dot', bg: '#DFF3FF', iconColor: '#2196D9' },
+  { id: 'library', name: 'Library', icon: 'fa-solid fa-book', bg: '#E4E9FF', iconColor: '#5B6EF5' },
+  { id: 'lounge', name: 'Lounge', icon: 'fa-solid fa-couch', bg: '#FFF3D1', iconColor: '#E0A100' },
+  { id: 'hall', name: 'Hall', icon: 'fa-solid fa-door-open', bg: '#E7F7E9', iconColor: '#2FB84F' },
+  { id: 'study', name: 'Study', icon: 'fa-solid fa-magnifying-glass', bg: '#E9E4FF', iconColor: '#7C5CFC' }
 ];
+
+const AVATAR_COLORS = ['#FF5C72', '#FFB020', '#2FD97C', '#2196D9', '#7C5CFC', '#F5539A'];
 
 const SECRET_PASSAGES = {
   'kitchen': 'study',
@@ -436,7 +450,7 @@ const ROOM_ADJACENCY = {
   'billiard': ['dining', 'library', 'hall'],
   'library': ['billiard', 'conservatory', 'study', 'hall'],
   'lounge': ['hall', 'conservatory'],
-  'hall': ['lounge', 'dining', 'billiard', 'library', 'study'],
+  'hall': ['lounge', 'dining', 'billiard', 'library', 'study', 'ballroom'],
   'study': ['hall', 'library']
 };
 
@@ -542,7 +556,7 @@ function startHostFlow() {
     clearTimeout(timeout);
     state = {
       roomCode, started: false,
-      players: [{ clientId: myClientId, name, hand: [], position: 'hall', isEliminated: false, connected: true }],
+      players: [{ clientId: myClientId, name, hand: [], position: 'hall', isEliminated: false, connected: true, avatarColor: AVATAR_COLORS[0] }],
       currentPlayerIndex: 0,
       solution: null,
       lastRoll: null,
@@ -607,7 +621,7 @@ function startHotSeatFlow() {
 
   // Create local state
   // Nice avatar colors (using suspect palette)
-  const avatarColors = ['#C41E3A', '#EAB308', '#16A34A', '#2563EB', '#7C3AED', '#F97316'];
+  const avatarColors = AVATAR_COLORS;
 
   state = {
     roomCode: 'HOTSEAT',
@@ -672,7 +686,7 @@ function handleHostReceive(conn, msg) {
     } else {
       if (state.started) { conn.send({ type: 'error', message: 'Game already in progress.' }); return; }
       if (state.players.length >= MAX_PLAYERS) { conn.send({ type: 'error', message: 'Room is full (6 players max).' }); return; }
-      state.players.push({ clientId: msg.clientId, name: msg.name, hand: [], position: 'hall', isEliminated: false, connected: true });
+      state.players.push({ clientId: msg.clientId, name: msg.name, hand: [], position: 'hall', isEliminated: false, connected: true, avatarColor: AVATAR_COLORS[state.players.length % AVATAR_COLORS.length] });
     }
     conn.send({ type: 'joined', clientId: msg.clientId });
     broadcastState();
@@ -727,6 +741,7 @@ function stateForRecipient(recipientClientId) {
         isEliminated: p.isEliminated,
         connected: p.connected,
         handCount: p.hand.length,
+        avatarColor: p.avatarColor,
         remainingSteps: 0 // hide from others
       };
     }),
@@ -806,7 +821,7 @@ function showPrivateInfo(msg) {
   if (msg.info === 'shownCard') {
     const card = getCardById(msg.cardId);
     const text = card ? card.name : msg.cardId;
-    document.getElementById('private-card-text').innerHTML = `<span class="text-[#C41E3A]">${text}</span><br><span class="text-sm font-normal text-[#6E6E73]">shown by ${msg.from}</span>`;
+    document.getElementById('private-card-text').innerHTML = `<span class="text-[#FF5C72]">${text}</span><br><span class="text-sm font-normal text-[#6B6B76]">shown by ${msg.from}</span>`;
     document.getElementById('private-modal').classList.remove('hidden');
     Sound.success();
   }
@@ -850,6 +865,43 @@ function handleAction(clientId, action, payload, conn) {
   if (action === 'forceEndGame') {
     if (clientId !== state.players[0].clientId) return;
     endGame(null);
+    return;
+  }
+
+  // Disprove must be handled before the isMyTurn gate below: the disprover is,
+  // by definition, never the player whose turn it currently is. Gating this on
+  // isMyTurn would reject every disprove attempt and permanently stall the game
+  // as soon as a suggestion had a valid disprover.
+  if (action === 'disprove') {
+    if (!state.pendingDisprove || state.pendingDisprove.disproverId !== clientId) {
+      sendReject(clientId, conn, { message: 'No pending disprove for you.' });
+      return;
+    }
+    const cardId = payload.cardId;
+    if (!state.pendingDisprove.possibleCards.includes(cardId)) {
+      sendReject(clientId, conn, { message: 'You cannot show that card.' });
+      return;
+    }
+
+    const suggesterId = state.currentSuggestion.byId;
+    const disprover = player;
+
+    // Log without revealing
+    state.log.push(`${disprover.name} disproved the suggestion.`);
+
+    // Send private info to suggester
+    sendPrivate(suggesterId, {
+      type: 'privateInfo',
+      info: 'shownCard',
+      cardId: cardId,
+      from: disprover.name
+    });
+
+    // Clear pending
+    state.pendingDisprove = null;
+    state.currentSuggestion = null;
+
+    broadcastState();
     return;
   }
 
@@ -925,7 +977,7 @@ function handleAction(clientId, action, payload, conn) {
     for (let i = 0; i < state.players.length - 1; i++) {
       const idx = (startIdx + i) % state.players.length;
       const p = state.players[idx];
-      if (p.isEliminated) continue;
+      if (p.isEliminated || p.connected === false) continue;
       const hasMatch = p.hand.some(c => c.id === suspectId || c.id === weaponId || c.id === roomId);
       if (hasMatch) {
         disprover = { player: p, index: idx };
@@ -953,40 +1005,6 @@ function handleAction(clientId, action, payload, conn) {
       state.currentSuggestion = null;
       Sound.suggestion();
     }
-    broadcastState();
-    return;
-  }
-
-  if (action === 'disprove') {
-    if (!state.pendingDisprove || state.pendingDisprove.disproverId !== clientId) {
-      sendReject(clientId, conn, { message: 'No pending disprove for you.' });
-      return;
-    }
-    const cardId = payload.cardId;
-    if (!state.pendingDisprove.possibleCards.includes(cardId)) {
-      sendReject(clientId, conn, { message: 'You cannot show that card.' });
-      return;
-    }
-
-    const suggesterId = state.currentSuggestion.byId;
-    const disprover = player;
-    const card = getCardById(cardId);
-
-    // Log without revealing
-    state.log.push(`${disprover.name} disproved the suggestion.`);
-
-    // Send private info to suggester
-    sendPrivate(suggesterId, {
-      type: 'privateInfo',
-      info: 'shownCard',
-      cardId: cardId,
-      from: disprover.name
-    });
-
-    // Clear pending
-    state.pendingDisprove = null;
-    state.currentSuggestion = null;
-
     broadcastState();
     return;
   }
@@ -1051,12 +1069,33 @@ function onActionRejected(payload) {
   setStatusLine(payload.message, true);
 }
 
+function findNextPlayerIndex(predicate) {
+  const n = state.players.length;
+  let idx = (state.currentPlayerIndex + 1) % n;
+  for (let i = 0; i < n; i++) {
+    if (predicate(state.players[idx])) return idx;
+    idx = (idx + 1) % n;
+  }
+  return null;
+}
+
 function nextTurn() {
-  let next = (state.currentPlayerIndex + 1) % state.players.length;
-  let attempts = 0;
-  while (state.players[next].isEliminated && attempts < state.players.length) {
-    next = (next + 1) % state.players.length;
-    attempts++;
+  // Tier 1: prefer a player who is both active and currently connected.
+  let next = findNextPlayerIndex(p => !p.isEliminated && p.connected !== false);
+  if (next === null) {
+    // Nobody active is currently connected — fall back to any non-eliminated
+    // player (even if disconnected) rather than an eliminated one. Landing on
+    // an eliminated player would soft-lock the game permanently, since an
+    // eliminated player can never take a turn again; landing on a
+    // disconnected-but-active one lets play resume the moment they reconnect.
+    next = findNextPlayerIndex(p => !p.isEliminated);
+  }
+  if (next === null) {
+    // Everyone is eliminated. This shouldn't normally be reachable — the
+    // makeAccusation handler already ends the game before calling nextTurn()
+    // once active.length hits 0 — but guard here too rather than corrupting
+    // currentPlayerIndex.
+    return;
   }
   state.currentPlayerIndex = next;
   state.lastRoll = null;
@@ -1142,7 +1181,7 @@ function setStatusLine(t, isError) {
   const el = document.getElementById('status-line');
   if (!el) return;
   el.textContent = t;
-  el.style.color = isError ? '#FF3B30' : '#6E6E73';
+  el.style.color = isError ? '#FF5C72' : '#6B6B76';
 }
 function showScreen(name) {
   ['home','lobby','game'].forEach(s => document.getElementById('screen-' + s).classList.toggle('hidden', s !== name));
@@ -1156,10 +1195,13 @@ function renderLobbyFromState() {
   document.getElementById('lobby-roomcode').textContent = src.roomCode || roomCode;
 
   const wrap = document.getElementById('lobby-players');
-  wrap.innerHTML = src.players.map(p => `
-    <div class="flex items-center justify-between bg-[#F5F5F7] rounded-xl px-3 py-2">
-      <span class="font-semibold">${escapeHtml(p.name)}</span>
-      <span class="text-xs ${p.connected !== false ? 'text-[#34C759]' : 'text-[#FF3B30]'}">${p.connected !== false ? '● online' : '○ offline'}</span>
+  wrap.innerHTML = src.players.map((p, i) => `
+    <div class="flex items-center justify-between bg-[#F6F3FB] rounded-xl px-3 py-2">
+      <span class="font-semibold flex items-center gap-x-2">
+        <span class="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${p.avatarColor || AVATAR_COLORS[i % AVATAR_COLORS.length]}"></span>
+        ${escapeHtml(p.name)}
+      </span>
+      <span class="text-xs font-semibold ${p.connected !== false ? 'text-[#2FD97C]' : 'text-[#FF5C72]'}">${p.connected !== false ? '● online' : '○ offline'}</span>
     </div>`).join('');
 
   const btn = document.getElementById('btn-start-game');
@@ -1253,12 +1295,12 @@ function renderGame() {
 
   document.getElementById('turn-indicator').innerHTML = !s.started
     ? 'Game over'
-    : (current ? (myTurn ? `<span class="text-[#C41E3A]">Your turn${remainingSteps > 0 ? ` • ${remainingSteps} step${remainingSteps>1?'s':''} left` : ''}</span>` : current.name + "'s turn") : '');
+    : (current ? (myTurn ? `<span class="text-[#FF5C72]">🕵️ Your turn${remainingSteps > 0 ? ` • ${remainingSteps} step${remainingSteps>1?'s':''} left` : ''}</span>` : current.name + "'s turn") : '');
 
   const connectionBadge = document.getElementById('connection-badge');
   if (connectionBadge) {
-    connectionBadge.textContent = isHotSeat ? '● Hot Seat mode' : '● connected';
-    connectionBadge.style.color = isHotSeat ? '#16A34A' : '#34C759';
+    connectionBadge.textContent = isHotSeat ? '● Pass & Play' : '● connected';
+    connectionBadge.style.color = isHotSeat ? '#2FD97C' : '#2FD97C';
   }
 
   document.getElementById('my-turn-banner').classList.toggle('hidden', !myTurn || !s.started);
@@ -1280,16 +1322,18 @@ function renderGame() {
   updateDiceDisplay(s.lastRoll, myRemaining);
 
   // Scoreboard / Players
-  document.getElementById('scoreboard').innerHTML = s.players.map(p => {
+  document.getElementById('scoreboard').innerHTML = s.players.map((p, i) => {
     const isCurrent = p.clientId === current?.clientId;
     const eliminated = p.isEliminated;
+    const dotColor = p.avatarColor || AVATAR_COLORS[i % AVATAR_COLORS.length];
     return `
-    <div class="score-badge rounded-xl px-3 py-2 text-sm ${isCurrent ? 'bg-[#C41E3A] border-[#C41E3A] text-white' : ''} ${eliminated ? 'opacity-60' : ''}">
+    <div class="score-badge rounded-xl px-3 py-2 text-sm ${isCurrent ? 'bg-[#7C5CFC] border-[#7C5CFC] text-white' : ''} ${eliminated ? 'opacity-50' : ''}">
       <div class="font-bold flex items-center gap-x-1.5">
+        <span class="inline-block w-2 h-2 rounded-full flex-shrink-0" style="background:${isCurrent ? '#fff' : dotColor}"></span>
         ${escapeHtml(p.name)} ${p.clientId === myClientId ? '<span class="text-xs opacity-75">(you)</span>' : ''}
         ${eliminated ? '<span class="text-[10px] px-1.5 py-px bg-black/10 rounded">OUT</span>' : ''}
       </div>
-      <div class="text-xs ${isCurrent ? 'text-white/80' : 'text-[#6E6E73]'}">${getCardById(p.position)?.name || p.position}</div>
+      <div class="text-xs ${isCurrent ? 'text-white/80' : 'text-[#9A93B5]'}">${getCardById(p.position)?.name || p.position}</div>
     </div>`;
   }).join('');
 
@@ -1310,7 +1354,7 @@ function renderGame() {
     const winnerEntry = s.log.find(l => l.includes(' wins!'));
     const noSolveEntry = s.log.find(l => l.includes('No winner'));
     const headline = winnerEntry || noSolveEntry || 'Game ended.';
-    document.getElementById('winner-text').innerHTML = headline + '<br><span class="text-sm text-[#6E6E73]">Solution: ' +
+    document.getElementById('winner-text').innerHTML = headline + '<br><span class="text-sm text-[#6B6B76]">Solution: ' +
       getCardById(s.solutionRevealed.suspectId).name + ' with the ' +
       getCardById(s.solutionRevealed.weaponId).name + ' in the ' +
       getCardById(s.solutionRevealed.roomId).name + '</span>';
@@ -1357,8 +1401,10 @@ function renderBoard(players) {
 
       const card = document.createElement('div');
       card.className = `room-card ${isValidMove ? 'highlight-move' : ''} ${isMyRoom ? 'current-room' : ''} ${myTurn ? 'cursor-pointer active:scale-[0.985]' : ''}`;
+      card.style.background = room.bg;
 
       let html = `
+        <div class="room-icon" style="background:${room.iconColor}26; color:${room.iconColor}"><i class="${room.icon}"></i></div>
         <div class="room-name">${room.name}</div>
         ${hasSecret ? `<div class="secret-passage">↔</div>` : ''}
         <div class="room-tokens"></div>
@@ -1369,65 +1415,53 @@ function renderBoard(players) {
       card.innerHTML = html;
 
       const tokensWrap = card.querySelector('.room-tokens');
-      
-      // 3D Token Stacking - creates a nice piled effect when multiple players share a room
+
+      // Simple overlapping row of avatar tokens — clear and legible rather than
+      // relying on 3D transforms that need an ancestor perspective context.
       const maxVisible = 5;
       const visiblePlayers = playersHere.slice(0, maxVisible);
       const extraCount = playersHere.length - maxVisible;
 
       visiblePlayers.forEach((p, index) => {
         const token = document.createElement('div');
-        const color = p.avatarColor || '#64748B';
-        
-        // Calculate 3D stack offsets (staggered pile)
-        const offsetX = index * 5;
-        const offsetY = -index * 3;
-        const offsetZ = index * 7;
-        const rot = index * 6 - 3; // slight rotation for natural look
+        const color = p.avatarColor || '#8C86A8';
 
         token.className = `token rounded-full flex items-center justify-center text-[9px] font-black flex-shrink-0`;
         token.style.backgroundColor = color;
-        token.style.color = (color === '#F8FAFC' || color === '#EAB308') ? '#1C2526' : '#fff';
-        token.style.position = 'absolute';
-        token.style.left = `calc(50% + ${offsetX - (visiblePlayers.length * 2.5)}px)`;
-        token.style.top = `${offsetY + 4}px`;
-        token.style.transform = `translateZ(${offsetZ}px) rotate(${rot}deg)`;
-        token.style.zIndex = 10 + index;
-        token.style.boxShadow = `0 ${3 + index}px ${6 + index * 2}px rgba(0,0,0,0.35), 
-                                 0 1px 2px rgba(0,0,0,0.2)`;
-        
+        token.style.color = '#fff';
+        token.style.marginLeft = index === 0 ? '0' : '-8px';
+        token.style.zIndex = String(10 + index);
+        token.style.opacity = p.isEliminated ? '0.45' : '1';
+
         token.textContent = p.name.substring(0, 2).toUpperCase();
         token.title = p.name + (p.isEliminated ? ' (out)' : '');
-        
+
         tokensWrap.appendChild(token);
       });
 
       // Show "+N more" badge if too many players in one room
       if (extraCount > 0) {
         const more = document.createElement('div');
-        more.className = `absolute text-[9px] font-bold px-1.5 py-px rounded-full bg-black/70 text-white`;
-        more.style.right = '4px';
-        more.style.bottom = '2px';
-        more.style.zIndex = '30';
+        more.className = `text-[9px] font-bold px-1.5 py-px rounded-full bg-[#21212B]/75 text-white ml-1 flex-shrink-0`;
         more.textContent = `+${extraCount}`;
         tokensWrap.appendChild(more);
       }
 
-      // Beautiful player names tooltip on hover of the token stack
+      // Player names tooltip on hover of the token stack
       if (playersHere.length > 1) {
         tokensWrap.classList.add('group', 'relative');
 
         const tooltip = document.createElement('div');
-        tooltip.className = `absolute hidden group-hover:block bg-[#1C2526] text-white text-xs rounded-2xl px-3 py-2 shadow-2xl z-[200] whitespace-nowrap border border-white/10`;
+        tooltip.className = `absolute hidden group-hover:block bg-[#21212B] text-white text-xs rounded-2xl px-3 py-2 shadow-2xl z-[200] whitespace-nowrap border border-white/10`;
         tooltip.style.bottom = '115%';
         tooltip.style.left = '50%';
         tooltip.style.transform = 'translateX(-50%)';
         tooltip.style.pointerEvents = 'none';
 
         const namesHTML = playersHere.map(p => {
-          const eliminated = p.isEliminated ? `<span class="text-[#FF3B30] text-[10px] ml-1">(out)</span>` : '';
+          const eliminated = p.isEliminated ? `<span class="text-[#FF8FA0] text-[10px] ml-1">(out)</span>` : '';
           return `<div class="flex items-center gap-x-2 py-[1px]">
-                    <span class="inline-block w-2 h-2 rounded-full flex-shrink-0" style="background:${p.avatarColor || '#64748B'}"></span>
+                    <span class="inline-block w-2 h-2 rounded-full flex-shrink-0" style="background:${p.avatarColor || '#8C86A8'}"></span>
                     <span>${p.name}</span>
                     ${eliminated}
                   </div>`;
@@ -1466,11 +1500,12 @@ function renderMyHand(me) {
   me.hand.forEach(card => {
     const el = document.createElement('div');
     const type = getCardType(card.id);
+    const full = getCardById(card.id);
     el.className = `card-chip ${type} text-sm flex-shrink-0`;
     let icon = '';
-    if (type === 'suspect') icon = '<i class="fa-solid fa-user-secret text-[#C41E3A] mr-1"></i>';
-    else if (type === 'weapon') icon = '<i class="fa-solid fa-crosshairs text-[#4A90A4] mr-1"></i>';
-    else icon = '<i class="fa-solid fa-home text-[#6B5B95] mr-1"></i>';
+    if (type === 'suspect') icon = `<i class="fa-solid fa-user-secret text-[#FF5C72] mr-1"></i>`;
+    else if (type === 'weapon') icon = `<i class="${full.icon || 'fa-solid fa-crosshairs'} text-[#7C5CFC] mr-1"></i>`;
+    else icon = `<i class="${full.icon || 'fa-solid fa-door-open'} mr-1" style="color:${full.iconColor || '#E0A100'}"></i>`;
     el.innerHTML = `${icon}<span>${card.name}</span>`;
     wrap.appendChild(el);
   });
@@ -1494,7 +1529,7 @@ function renderDisproveSection(s, me) {
   s.pendingDisprove.possibleCards.forEach(cardId => {
     const card = getCardById(cardId);
     const btn = document.createElement('button');
-    btn.className = 'px-4 py-2 bg-white border border-[#D2D2D7] rounded-2xl text-sm font-semibold active:bg-[#F5F5F7]';
+    btn.className = 'px-4 py-2 bg-white border-2 border-[#E7E2F4] rounded-2xl text-sm font-semibold active:bg-[#F6F3FB]';
     btn.textContent = card.name;
     btn.onclick = () => {
       Sound.click();
@@ -1539,9 +1574,10 @@ function openSuggestionModal(currentRoomId) {
   const susWrap = document.getElementById('suggestion-suspects');
   susWrap.innerHTML = '';
   SUSPECTS.forEach(sus => {
+    const selected = selectedSuggestion.suspect === sus.id;
     const btn = document.createElement('button');
-    btn.className = `px-3 py-2 text-sm rounded-2xl border text-left ${selectedSuggestion.suspect === sus.id ? 'bg-[#C41E3A] text-white border-[#C41E3A]' : 'bg-white border-[#D2D2D7]'}`;
-    btn.innerHTML = `<div class="font-semibold">${sus.name}</div>`;
+    btn.className = `px-3 py-2 text-sm rounded-2xl border-2 text-left ${selected ? 'bg-[#FF5C72] text-white border-[#FF5C72]' : 'bg-white border-[#E7E2F4]'}`;
+    btn.innerHTML = `<div class="font-semibold flex items-center gap-x-1.5"><span class="inline-block w-2 h-2 rounded-full flex-shrink-0" style="background:${sus.color}"></span>${sus.name}</div>`;
     btn.onclick = () => {
       selectedSuggestion.suspect = sus.id;
       openSuggestionModal(currentRoomId); // re-render
@@ -1553,9 +1589,10 @@ function openSuggestionModal(currentRoomId) {
   const weapWrap = document.getElementById('suggestion-weapons');
   weapWrap.innerHTML = '';
   WEAPONS.forEach(w => {
+    const selected = selectedSuggestion.weapon === w.id;
     const btn = document.createElement('button');
-    btn.className = `px-3 py-2 text-sm rounded-2xl border text-left ${selectedSuggestion.weapon === w.id ? 'bg-[#C41E3A] text-white border-[#C41E3A]' : 'bg-white border-[#D2D2D7]'}`;
-    btn.innerHTML = `<div class="font-semibold">${w.name}</div>`;
+    btn.className = `px-3 py-2 text-sm rounded-2xl border-2 text-left ${selected ? 'bg-[#FF5C72] text-white border-[#FF5C72]' : 'bg-white border-[#E7E2F4]'}`;
+    btn.innerHTML = `<div class="font-semibold flex items-center gap-x-1.5"><i class="${w.icon}"></i>${w.name}</div>`;
     btn.onclick = () => {
       selectedSuggestion.weapon = w.id;
       openSuggestionModal(currentRoomId);
@@ -1597,9 +1634,10 @@ function openAccusationModal() {
   const sWrap = document.getElementById('accuse-suspects');
   sWrap.innerHTML = '';
   SUSPECTS.forEach(sus => {
+    const selected = selectedAccusation.suspect === sus.id;
     const btn = document.createElement('button');
-    btn.className = `w-full text-left px-3 py-2 text-sm rounded-2xl border ${selectedAccusation.suspect === sus.id ? 'bg-[#1C2526] text-white border-[#1C2526]' : 'bg-white border-[#D2D2D7]'}`;
-    btn.innerHTML = sus.name;
+    btn.className = `w-full text-left px-3 py-2 text-sm rounded-2xl border-2 ${selected ? 'bg-[#21212B] text-white border-[#21212B]' : 'bg-white border-[#E7E2F4]'}`;
+    btn.innerHTML = `<span class="inline-block w-2 h-2 rounded-full flex-shrink-0 mr-1.5" style="background:${sus.color}"></span>${sus.name}`;
     btn.onclick = () => { selectedAccusation.suspect = sus.id; openAccusationModal(); };
     sWrap.appendChild(btn);
   });
@@ -1608,9 +1646,10 @@ function openAccusationModal() {
   const wWrap = document.getElementById('accuse-weapons');
   wWrap.innerHTML = '';
   WEAPONS.forEach(w => {
+    const selected = selectedAccusation.weapon === w.id;
     const btn = document.createElement('button');
-    btn.className = `w-full text-left px-3 py-2 text-sm rounded-2xl border ${selectedAccusation.weapon === w.id ? 'bg-[#1C2526] text-white border-[#1C2526]' : 'bg-white border-[#D2D2D7]'}`;
-    btn.innerHTML = w.name;
+    btn.className = `w-full text-left px-3 py-2 text-sm rounded-2xl border-2 ${selected ? 'bg-[#21212B] text-white border-[#21212B]' : 'bg-white border-[#E7E2F4]'}`;
+    btn.innerHTML = `<i class="${w.icon} mr-1.5"></i>${w.name}`;
     btn.onclick = () => { selectedAccusation.weapon = w.id; openAccusationModal(); };
     wWrap.appendChild(btn);
   });
@@ -1619,9 +1658,10 @@ function openAccusationModal() {
   const rWrap = document.getElementById('accuse-rooms');
   rWrap.innerHTML = '';
   ROOMS.forEach(r => {
+    const selected = selectedAccusation.room === r.id;
     const btn = document.createElement('button');
-    btn.className = `w-full text-left px-3 py-2 text-sm rounded-2xl border ${selectedAccusation.room === r.id ? 'bg-[#1C2526] text-white border-[#1C2526]' : 'bg-white border-[#D2D2D7]'}`;
-    btn.innerHTML = r.name;
+    btn.className = `w-full text-left px-3 py-2 text-sm rounded-2xl border-2 ${selected ? 'bg-[#21212B] text-white border-[#21212B]' : 'bg-white border-[#E7E2F4]'}`;
+    btn.innerHTML = `<i class="${r.icon} mr-1.5" style="color:${selected ? '#fff' : r.iconColor}"></i>${r.name}`;
     btn.onclick = () => { selectedAccusation.room = r.id; openAccusationModal(); };
     rWrap.appendChild(btn);
   });
@@ -1720,34 +1760,34 @@ function renderNotepad() {
   let html = '';
 
   // Suspects
-  html += `<div class="mb-2"><div class="font-semibold text-[#C41E3A] mb-1 flex items-center gap-x-1"><i class="fa-solid fa-user-secret fa-sm"></i> Suspects</div>`;
+  html += `<div class="mb-2"><div class="font-semibold text-[#FF5C72] mb-1 flex items-center gap-x-1"><i class="fa-solid fa-user-secret fa-sm"></i> Suspects</div>`;
   SUSPECTS.forEach(s => {
     const checked = notepadState.suspects && notepadState.suspects[s.id];
     html += `<label class="flex items-center gap-x-2 py-0.5 cursor-pointer">
-      <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleNotepadMark('suspects', '${s.id}')" class="accent-[#C41E3A]">
-      <span class="${checked ? 'line-through text-[#8E8E93]' : ''}">${s.name}</span>
+      <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleNotepadMark('suspects', '${s.id}')" class="accent-[#FF5C72]">
+      <span class="${checked ? 'line-through text-[#9A93B5]' : ''}">${s.name}</span>
     </label>`;
   });
   html += `</div>`;
 
   // Weapons
-  html += `<div class="mb-2"><div class="font-semibold text-[#4A90A4] mb-1 flex items-center gap-x-1"><i class="fa-solid fa-crosshairs fa-sm"></i> Weapons</div>`;
+  html += `<div class="mb-2"><div class="font-semibold text-[#7C5CFC] mb-1 flex items-center gap-x-1"><i class="fa-solid fa-crosshairs fa-sm"></i> Weapons</div>`;
   WEAPONS.forEach(w => {
     const checked = notepadState.weapons && notepadState.weapons[w.id];
     html += `<label class="flex items-center gap-x-2 py-0.5 cursor-pointer">
-      <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleNotepadMark('weapons', '${w.id}')" class="accent-[#4A90A4]">
-      <span class="${checked ? 'line-through text-[#8E8E93]' : ''}">${w.name}</span>
+      <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleNotepadMark('weapons', '${w.id}')" class="accent-[#7C5CFC]">
+      <span class="${checked ? 'line-through text-[#9A93B5]' : ''}">${w.name}</span>
     </label>`;
   });
   html += `</div>`;
 
   // Rooms
-  html += `<div><div class="font-semibold text-[#6B5B95] mb-1 flex items-center gap-x-1"><i class="fa-solid fa-home fa-sm"></i> Rooms</div>`;
+  html += `<div><div class="font-semibold text-[#E0A100] mb-1 flex items-center gap-x-1"><i class="fa-solid fa-door-open fa-sm"></i> Rooms</div>`;
   ROOMS.forEach(r => {
     const checked = notepadState.rooms && notepadState.rooms[r.id];
     html += `<label class="flex items-center gap-x-2 py-0.5 cursor-pointer">
-      <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleNotepadMark('rooms', '${r.id}')" class="accent-[#6B5B95]">
-      <span class="${checked ? 'line-through text-[#8E8E93]' : ''}">${r.name}</span>
+      <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleNotepadMark('rooms', '${r.id}')" class="accent-[#E0A100]">
+      <span class="${checked ? 'line-through text-[#9A93B5]' : ''}">${r.name}</span>
     </label>`;
   });
   html += `</div>`;
