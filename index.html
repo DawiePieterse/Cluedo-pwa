@@ -29,28 +29,18 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
   border:1px solid #3A4A4C; 
   box-shadow:0 25px 60px -15px rgba(0,0,0,.45), 
              0 10px 20px -8px rgba(0,0,0,.3);
-  perspective: 1400px;
-  transform-style: preserve-3d;
 }
 .board-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 8px;
-  transform: rotateX(11deg) rotateY(-5deg) translateZ(0);
-  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  transform-origin: center center;
-}
-.board-grid:hover {
-  transform: rotateX(8deg) rotateY(-3deg) translateZ(0);
 }
 .room-card{ 
-  transition: transform .2s cubic-bezier(0.23, 1, 0.32, 1), 
-              box-shadow .2s ease;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; 
   cursor:pointer; 
   position:relative; 
   overflow:hidden;
-  transform-style: preserve-3d;
   background: #2A3739;
   border: 1px solid #445456;
   border-radius: 14px;
@@ -62,7 +52,7 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
               0 1px 3px rgba(0,0,0,.15);
 }
 .room-card:hover{ 
-  transform: translateY(-3px) rotateX(4deg) scale(1.015);
+  transform: translateY(-2px) scale(1.015);
   box-shadow: 0 12px 24px rgba(0,0,0,.25),
               0 4px 8px rgba(0,0,0,.15);
 }
@@ -108,6 +98,8 @@ body{ background:var(--apple-gray-bg); color:var(--apple-ink); -webkit-font-smoo
   perspective: 400px;
 }
 .room-card.highlight-move{ box-shadow:0 0 0 3px #34C759, 0 4px 12px rgba(52,199,89,.3); border-color:#34C759; }
+.room-card.current-room{ box-shadow:0 0 0 3px var(--cluedo-gold), 0 4px 14px rgba(212,175,55,.35); border-color:var(--cluedo-gold); background:#33372A; }
+.room-card.current-room .room-name{ color:var(--cluedo-gold); }
 .room-card .secret-passage{ position:absolute; top:4px; right:4px; font-size:10px; background:#6B5B95; color:white; padding:1px 5px; border-radius:6px; }
 .score-badge{ background:#FFFFFF; border:1px solid var(--apple-gray-line); color:var(--apple-ink); box-shadow:0 1px 2px rgba(0,0,0,.05); }
 #rotate-overlay{ position:fixed; inset:0; background:#1D1D1F; color:#fff; z-index:999; display:none; align-items:center; justify-content:center; text-align:center; padding:32px; }
@@ -1348,10 +1340,11 @@ function renderBoard(players) {
       const room = ROOMS.find(r => r.id === roomId);
       const playersHere = players.filter(p => p.position === roomId);
       const isValidMove = validTargets.has(roomId);
+      const isMyRoom = currentPos === roomId;
       const hasSecret = SECRET_PASSAGES[roomId];
 
       const card = document.createElement('div');
-      card.className = `room-card ${isValidMove ? 'highlight-move' : ''} ${myTurn ? 'cursor-pointer active:scale-[0.985]' : ''}`;
+      card.className = `room-card ${isValidMove ? 'highlight-move' : ''} ${isMyRoom ? 'current-room' : ''} ${myTurn ? 'cursor-pointer active:scale-[0.985]' : ''}`;
 
       let html = `
         <div class="room-name">${room.name}</div>
