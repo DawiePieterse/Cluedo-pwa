@@ -156,10 +156,6 @@ body{ background:var(--canvas); color:var(--ink); -webkit-font-smoothing:antiali
         <i class="fa-solid fa-house mr-2"></i>Host a Game
       </button>
 
-      <button onclick="startHotSeatFlow()" class="w-full py-4 bg-[#2FD97C] text-white rounded-2xl font-semibold text-lg active:scale-[0.98] shadow-[0_8px_20px_-8px_rgba(47,217,124,.6)]">
-        <i class="fa-solid fa-users mr-2"></i>Pass &amp; Play
-      </button>
-
       <div class="flex items-center gap-x-2 text-[#9A93B5] text-xs mt-2">
         <div class="h-px bg-[#E7E2F4] flex-1"></div>OR<div class="h-px bg-[#E7E2F4] flex-1"></div>
       </div>
@@ -381,21 +377,6 @@ body{ background:var(--canvas); color:var(--ink); -webkit-font-smoothing:antiali
   </div>
 </div>
 
-<!-- Hot Seat Pass Device Overlay -->
-<div id="hotseat-pass-overlay" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-6" style="background:linear-gradient(155deg,#21212B,#3A2E6B);">
-  <div class="text-center max-w-sm">
-    <i class="fa-solid fa-handshake text-6xl text-white mb-6"></i>
-    <div class="text-white display-font text-3xl mb-2">Pass the iPad</div>
-    <div id="hotseat-pass-text" class="text-[#C9BFF0] text-xl mb-8"></div>
-
-    <button onclick="confirmHotSeatHandover()" 
-            class="w-full py-4 bg-white text-[#21212B] rounded-2xl font-bold text-lg active:scale-[0.985]">
-      I'm ready — show my turn
-    </button>
-    <p class="text-[#C9BFF0] text-xs mt-4">Your hand and notes are private</p>
-  </div>
-</div>
-
 <script>
 /* =========================================================================
    GAME CONSTANTS
@@ -553,9 +534,6 @@ let myRenderState = null;
 let myClientId = localStorage.getItem('cluedo-clientId') || ('p_' + Math.random().toString(36).slice(2, 10));
 localStorage.setItem('cluedo-clientId', myClientId);
 
-let isHotSeat = false;
-let hotSeatPlayerOrder = []; // array of clientIds in turn order for hot seat
-
 let selectedSuggestion = { suspect: null, weapon: null };
 let selectedAccusation = { suspect: null, weapon: null, room: null };
 
@@ -567,8 +545,6 @@ function makeRoomCode() {
 
 function startHostFlow() {
   Sound.click();
-  isHotSeat = false;
-  myClientId = localStorage.getItem('cluedo-clientId') || myClientId;
   const name = document.getElementById('input-name').value.trim() || 'Player 1';
   roomCode = makeRoomCode();
   isHost = true;
@@ -597,8 +573,6 @@ function startHostFlow() {
 
 function startJoinFlow() {
   Sound.click();
-  isHotSeat = false;
-  myClientId = localStorage.getItem('cluedo-clientId') || myClientId;
   const name = document.getElementById('input-name').value.trim() || 'Player';
   const code = document.getElementById('input-roomcode').value.trim().toUpperCase();
   if (!code) { setHomeStatus('Enter a room code.'); return; }
@@ -619,61 +593,6 @@ function startJoinFlow() {
     hostConn.on('error', e => { clearTimeout(timeout); setHomeStatus(describePeerError(e)); });
   });
   peer.on('error', err => { clearTimeout(timeout); setHomeStatus(describePeerError(err)); });
-}
-
-function startHotSeatFlow() {
-  Sound.click();
-  isHotSeat = true;
-  isHost = true;
-  roomCode = 'HOTSEAT';
-
-  // Simple hot seat player name collection
-  const names = [];
-  for (let i = 1; i <= 6; i++) {
-    const name = prompt(`Enter name for Player ${i} (or leave blank to stop):`, `Player ${i}`);
-    if (!name || name.trim() === '') break;
-    names.push(name.trim());
-  }
-
-  if (names.length < 3) {
-    alert('Hot Seat needs at least 3 players.');
-    isHotSeat = false;
-    isHost = false;
-    return;
-  }
-
-  // Create local state
-  // Nice avatar colors (using suspect palette)
-  const avatarColors = AVATAR_COLORS;
-
-  state = {
-    roomCode: 'HOTSEAT',
-    started: false,
-    players: names.map((name, index) => ({
-      clientId: 'hs_' + index,
-      name: name,
-      hand: [],
-      position: 'hall',
-      isEliminated: false,
-      connected: true,
-      remainingSteps: 0,
-      avatarColor: avatarColors[index % avatarColors.length]
-    })),
-    currentPlayerIndex: 0,
-    solution: null,
-    lastRoll: null,
-    currentSuggestion: null,
-    pendingDisprove: null,
-    log: [],
-    matchHistory: []
-  };
-
-  hotSeatPlayerOrder = state.players.map(p => p.clientId);
-
-  // Set first player as active
-  myClientId = hotSeatPlayerOrder[0];
-
-  showLobby();
 }
 
 function failToConnect(kind) {
@@ -732,10 +651,6 @@ function handleClientReceive(msg) {
 }
 
 function broadcastState() {
-  if (isHotSeat) {
-    applyIncomingState(stateForRecipient(myClientId));
-    return;
-  }
   Object.values(connections).forEach(conn => {
     if (conn.open) conn.send({ type: 'state', state: stateForRecipient(conn._cluedoClientId) });
   });
@@ -780,8 +695,6 @@ function stateForRecipient(recipientClientId) {
 let lastSeenLogEntry = null;
 let wasMyTurnLast = null;
 let previousStarted = false;
-let lastHotSeatHolder = null;
-let lastPendingDisproverId = null;
 
 function applyIncomingState(s) {
   if (!s) return;
@@ -790,8 +703,6 @@ function applyIncomingState(s) {
   myRenderState = s;
 
   if (!s.started) {
-    lastHotSeatHolder = null;
-    lastPendingDisproverId = null;
     if (justEnded) {
       showScreen('game');
       renderGame();
@@ -804,38 +715,6 @@ function applyIncomingState(s) {
   handleSoundEvents(s);
   showScreen('game');
   renderGame();
-
-  // Hot seat: prompt an immediate device handover any time someone other than
-  // whoever is currently holding it needs to act next. Two cases:
-  //  1. A suggestion needs disproving — this happens mid-turn (currentPlayerIndex
-  //     doesn't change), so it needs its own detection separate from turn changes.
-  //  2. The turn itself changes — game start, End Turn, or a turn forced forward
-  //     by an eliminating accusation.
-  if (isHotSeat) {
-    const current = s.players[s.currentPlayerIndex];
-    const disproverId = s.pendingDisprove ? s.pendingDisprove.disproverId : null;
-
-    if (disproverId) {
-      if (disproverId !== lastPendingDisproverId && disproverId !== myClientId) {
-        const disproverPlayer = s.players.find(p => p.clientId === disproverId);
-        if (disproverPlayer) setTimeout(() => showHotSeatPassScreen(disproverPlayer.name, disproverId), 300);
-      }
-      lastPendingDisproverId = disproverId;
-    } else if (lastPendingDisproverId !== null) {
-      // A disprove just resolved — hand the device back to whoever's turn it
-      // still is so they can continue (roll further, suggest, end turn...).
-      lastPendingDisproverId = null;
-      if (current && current.clientId !== myClientId) {
-        setTimeout(() => showHotSeatPassScreen(current.name, current.clientId), 300);
-      }
-    } else if (current) {
-      const holderChanged = lastHotSeatHolder !== current.clientId;
-      if (holderChanged && current.clientId !== myClientId) {
-        setTimeout(() => showHotSeatPassScreen(current.name, current.clientId), 300);
-      }
-    }
-    if (current) lastHotSeatHolder = current.clientId;
-  }
 }
 
 function handleSoundEvents(s) {
@@ -1261,16 +1140,12 @@ function renderLobbyFromState() {
   if (isHost) {
     btn.classList.remove('hidden');
     btn.disabled = src.players.length < MIN_PLAYERS_TO_START;
-    if (isHotSeat) {
-      document.getElementById('lobby-note').textContent = `Hot Seat • ${src.players.length} players ready. Tap Start Game.`;
-    } else {
-      document.getElementById('lobby-note').textContent = src.players.length < MIN_PLAYERS_TO_START
-        ? `Need at least ${MIN_PLAYERS_TO_START} players to start.`
-        : `Ready — ${src.players.length} players. Host can start.`;
-    }
+    document.getElementById('lobby-note').textContent = src.players.length < MIN_PLAYERS_TO_START
+      ? `Need at least ${MIN_PLAYERS_TO_START} players to start.`
+      : `Ready — ${src.players.length} players. Host can start.`;
   } else {
     btn.classList.add('hidden');
-    document.getElementById('lobby-note').textContent = isHotSeat ? 'Hot Seat mode' : 'Waiting for host to start the game...';
+    document.getElementById('lobby-note').textContent = 'Waiting for host to start the game...';
   }
 }
 
@@ -1280,39 +1155,6 @@ function hostEndGame() {
   if (!confirm('End the game now?')) return;
   Sound.click();
   submitAction('forceEndGame');
-}
-
-/* Hot Seat helpers */
-function showHotSeatPassScreen(nextPlayerName, nextClientId) {
-  const overlay = document.getElementById('hotseat-pass-overlay');
-  const text = document.getElementById('hotseat-pass-text');
-  text.innerHTML = `Hand the iPad to <span class="font-bold text-white">${nextPlayerName}</span>`;
-  overlay.dataset.nextClientId = nextClientId;
-  overlay.classList.remove('hidden');
-}
-
-function confirmHotSeatHandover() {
-  const overlay = document.getElementById('hotseat-pass-overlay');
-  const nextClientId = overlay.dataset.nextClientId;
-  overlay.classList.add('hidden');
-
-  if (nextClientId) {
-    myClientId = nextClientId;
-    // The state currently in myRenderState was filtered for whoever was
-    // holding the device before (e.g. it hides disprove card options from
-    // anyone but the disprover). Re-filter for the new holder before
-    // rendering, since hot seat always has the full state available locally.
-    if (isHotSeat && state) {
-      myRenderState = stateForRecipient(myClientId);
-    }
-    renderGame();
-    Sound.click();
-  }
-}
-
-function getCurrentHotSeatPlayer() {
-  if (!isHotSeat || !state) return null;
-  return state.players.find(p => p.clientId === myClientId);
 }
 
 function closeWinnerModal() {
@@ -1358,8 +1200,8 @@ function renderGame() {
 
   const connectionBadge = document.getElementById('connection-badge');
   if (connectionBadge) {
-    connectionBadge.textContent = isHotSeat ? '● Pass & Play' : '● connected';
-    connectionBadge.style.color = isHotSeat ? '#2FD97C' : '#2FD97C';
+    connectionBadge.textContent = '● connected';
+    connectionBadge.style.color = '#2FD97C';
   }
 
   document.getElementById('my-turn-banner').classList.toggle('hidden', !myTurn || !s.started);
