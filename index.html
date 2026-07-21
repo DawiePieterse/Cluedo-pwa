@@ -19,7 +19,7 @@
 <style>
 :root{
   /* Brand palette — mystery/detective, warm and playful rather than moody */
-  --canvas:#F6F3FB; --panel:#FFFFFF;
+  --canvas:#F4F1FB; --panel:#FFFFFF;
   --ink:#21212B; --ink-soft:#6B6B76;
   --line:#E7E2F4;
   --violet:#7C5CFC; --violet-dark:#6142E0; --violet-tint:#EFEAFF;
@@ -30,16 +30,39 @@
 }
 *{ font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif; }
 h1,h3,p{ font-size:1em; margin:0; }
-body{ background:var(--canvas); color:var(--ink); -webkit-font-smoothing:antialiased; }
+body{
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  background-color:var(--canvas);
+  background-image:
+    radial-gradient(760px circle at 8% -6%, rgba(124,92,252,.16), transparent 45%),
+    radial-gradient(680px circle at 102% 4%, rgba(255,92,114,.13), transparent 42%),
+    radial-gradient(720px circle at 92% 104%, rgba(255,176,32,.13), transparent 45%),
+    radial-gradient(680px circle at -4% 96%, rgba(47,217,124,.12), transparent 44%);
+  background-attachment:fixed;
+}
 .display-font{ font-family:'Fredoka',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; font-weight:600; letter-spacing:-0.01em; }
 .scrabble-font{ font-family:'Fredoka',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; font-weight:700; letter-spacing:-0.01em; }
 
+/* Frosted-glass card treatment for panels floating over the ambient bg */
+.glass{
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(20px) saturate(1.4);
+  -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 24px 50px -24px rgba(52,33,120,.32), 0 3px 10px -4px rgba(33,33,43,.06);
+}
+
 /* ---------- Board ---------- */
 .cluedo-board{
-  background:linear-gradient(180deg,#FFFFFF,#FBF9FF);
-  border:1px solid var(--line);
-  box-shadow:0 20px 45px -20px rgba(124,92,252,.28),
-             0 6px 16px -6px rgba(33,33,43,.08);
+  position:relative;
+  background:
+    radial-gradient(120% 90% at 50% -10%, #FFFFFF, #F1ECFB 70%, #EBE4F8);
+  border:1px solid rgba(255,255,255,.8);
+  box-shadow:
+    0 30px 60px -26px rgba(80,54,180,.42),
+    0 8px 22px -10px rgba(33,33,43,.12),
+    inset 0 1px 0 rgba(255,255,255,.9);
 }
 .board-grid {
   display: grid;
@@ -48,7 +71,7 @@ body{ background:var(--canvas); color:var(--ink); -webkit-font-smoothing:antiali
   gap: 8px;
 }
 .room-card{
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease, border-color .18s ease, filter .18s ease;
   cursor:pointer;
   position:relative;
   overflow:hidden;
@@ -59,33 +82,46 @@ body{ background:var(--canvas); color:var(--ink); -webkit-font-smoothing:antiali
   padding: 8px 8px 6px;
   display: flex;
   flex-direction: column;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.85), 0 2px 6px -2px rgba(33,33,43,.1);
+}
+/* subtle sheen sweep across the top of every tile */
+.room-card::before{
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(160deg, rgba(255,255,255,.55), transparent 42%);
+  pointer-events:none;
 }
 .room-card:hover{
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-3px) scale(1.025);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 12px 22px -8px rgba(33,33,43,.24);
+  filter:saturate(1.08);
 }
+.room-card:active{ transform: translateY(-1px) scale(.99); }
 .room-card .room-icon{
-  width:26px; height:26px; border-radius:9px;
+  width:28px; height:28px; border-radius:10px;
   display:flex; align-items:center; justify-content:center;
-  font-size:12px; flex-shrink:0; margin-bottom:4px;
-  box-shadow:0 2px 5px rgba(0,0,0,.1);
+  font-size:13px; flex-shrink:0; margin-bottom:4px;
+  box-shadow:0 3px 8px -2px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.5);
 }
-.room-card .room-name{ color:var(--ink); font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; letter-spacing:-0.01em; }
-.room-card .room-hint{ color:var(--ink-soft); font-size:8.5px; margin-top:1px; font-weight:600; }
+.room-card .room-name{ color:var(--ink); font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; letter-spacing:-0.01em; position:relative; }
+.room-card .room-hint{ color:var(--ink-soft); font-size:8.5px; margin-top:1px; font-weight:600; position:relative; }
 .room-card .token{
-  width:24px;
-  height:24px;
+  width:26px;
+  height:26px;
   border:2.5px solid #fff;
-  box-shadow:0 2px 6px rgba(33,33,43,.25);
-  font-size:9.5px;
+  box-shadow:0 3px 8px -1px rgba(33,33,43,.35), inset 0 2px 3px rgba(255,255,255,.45);
+  font-size:10px;
   font-weight:700;
   font-family:'Fredoka',sans-serif;
+  background-image:linear-gradient(160deg, rgba(255,255,255,.35), transparent 55%);
 }
-.card-chip{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:9px 13px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px; box-shadow:0 1px 2px rgba(33,33,43,.04); }
+.card-chip{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:9px 13px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px; box-shadow:0 2px 6px -2px rgba(33,33,43,.1), inset 0 1px 0 rgba(255,255,255,.8); transition:transform .12s ease, box-shadow .12s ease; }
+.card-chip:hover{ transform:translateY(-1px); box-shadow:0 6px 14px -4px rgba(33,33,43,.18); }
 .card-chip.suspect{ border-left:4px solid var(--coral); }
 .card-chip.weapon{ border-left:4px solid var(--violet); }
 .card-chip.room{ border-left:4px solid var(--gold-dark); }
-.modal{ animation:modalPop .2s ease-out; }
-@keyframes modalPop{ from{transform:scale(.9);opacity:0;} to{transform:scale(1);opacity:1;} }
+.modal{ animation:modalPop .28s cubic-bezier(.34,1.56,.64,1); }
+@keyframes modalPop{ from{transform:scale(.88) translateY(8px);opacity:0;} to{transform:scale(1) translateY(0);opacity:1;} }
 .tile{ transition:transform .1s, box-shadow .1s; }
 .tile.selected{ box-shadow:0 0 0 3px var(--violet); transform:translateY(-2px); }
 #screen-game{ height:100vh; height:100dvh; overflow:hidden; }
@@ -117,16 +153,58 @@ body{ background:var(--canvas); color:var(--ink); -webkit-font-smoothing:antiali
   margin-top: auto;
   width: 100%;
 }
-.room-card.highlight-move{ border-color:var(--mint); box-shadow:0 0 0 3px rgba(47,217,124,.28), 0 6px 16px -4px rgba(47,217,124,.35); }
+.room-card.highlight-move{ border-color:var(--mint); box-shadow:0 0 0 3px rgba(47,217,124,.3), 0 8px 18px -6px rgba(47,217,124,.45); }
+.room-card.highlight-move::after{
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(90% 70% at 50% 120%, rgba(47,217,124,.22), transparent 70%);
+  pointer-events:none;
+}
 .room-card.highlight-move .room-hint{ color:var(--mint-dark); }
-.room-card.current-room{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(255,176,32,.28), 0 6px 16px -4px rgba(255,176,32,.35); }
+/* Signature: the room you're in gets a slow "detective's spotlight" pulse */
+.room-card.current-room{ border-color:var(--gold); }
+.room-card.current-room::after{
+  content:'';
+  position:absolute; inset:-2px;
+  border-radius:18px;
+  box-shadow:0 0 0 3px rgba(255,176,32,.35), 0 8px 20px -4px rgba(255,176,32,.5);
+  animation:spotlight 2.4s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes spotlight{
+  0%,100%{ box-shadow:0 0 0 3px rgba(255,176,32,.3), 0 6px 16px -6px rgba(255,176,32,.4); }
+  50%{ box-shadow:0 0 0 5px rgba(255,176,32,.5), 0 10px 26px -4px rgba(255,176,32,.62); }
+}
 .room-card.current-room .room-name{ color:var(--gold-dark); }
-.room-card .secret-passage{ position:absolute; top:6px; right:6px; font-size:10px; background:var(--violet); color:white; padding:1px 6px; border-radius:8px; font-weight:700; }
-.score-badge{ background:#FFFFFF; border:1px solid var(--line); color:var(--ink); box-shadow:0 1px 3px rgba(33,33,43,.06); }
-#rotate-overlay{ position:fixed; inset:0; background:var(--ink); color:#fff; z-index:999; display:none; align-items:center; justify-content:center; text-align:center; padding:32px; }
+.room-card .secret-passage{ position:absolute; top:6px; right:6px; font-size:10px; background:linear-gradient(150deg,var(--violet),var(--violet-dark)); color:white; padding:1px 6px; border-radius:8px; font-weight:700; box-shadow:0 2px 5px -1px rgba(97,66,224,.5); z-index:2; }
+.score-badge{ background:rgba(255,255,255,.8); border:1px solid rgba(255,255,255,.7); color:var(--ink); box-shadow:0 2px 8px -3px rgba(52,33,120,.2), inset 0 1px 0 rgba(255,255,255,.7); transition:transform .12s ease; }
+.score-badge:hover{ transform:translateY(-1px); }
+/* Dice pop */
+#dice-display{ box-shadow:0 8px 18px -6px rgba(97,66,224,.55), inset 0 2px 4px rgba(255,255,255,.4); }
+.dice-pop{ animation:dicePop .5s cubic-bezier(.34,1.56,.64,1); }
+@keyframes dicePop{ 0%{ transform:scale(.5) rotate(-25deg); opacity:0; } 60%{ transform:scale(1.15) rotate(8deg); } 100%{ transform:scale(1) rotate(0); opacity:1; } }
+/* Home hero glow */
+.hero-badge{ position:relative; }
+.hero-badge::after{
+  content:'';
+  position:absolute; inset:-10px;
+  border-radius:34px;
+  background:radial-gradient(circle, rgba(124,92,252,.4), transparent 68%);
+  z-index:-1;
+  animation:heroGlow 3.2s ease-in-out infinite;
+}
+@keyframes heroGlow{ 0%,100%{ opacity:.55; transform:scale(1); } 50%{ opacity:.9; transform:scale(1.08); } }
+/* Turn banner subtle attention pulse */
+#my-turn-banner:not(.hidden){ animation:turnPulse 2s ease-in-out infinite; }
+@keyframes turnPulse{ 0%,100%{ opacity:.85; } 50%{ opacity:1; } }
+#rotate-overlay{ position:fixed; inset:0; background:linear-gradient(155deg,#2A2340,#181428); color:#fff; z-index:999; display:none; align-items:center; justify-content:center; text-align:center; padding:32px; }
 @media (orientation: portrait){ #rotate-overlay.enabled{ display:flex; } }
 .rotate-icon{ animation:rotateHint 1.8s ease-in-out infinite; }
 @keyframes rotateHint{ 0%,100%{ transform:rotate(0deg); } 50%{ transform:rotate(90deg); } }
+
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.05ms !important; }
+}
 </style>
 </head>
 <body class="bg-[#F6F3FB] text-[#21212B] min-h-screen">
@@ -143,13 +221,13 @@ body{ background:var(--canvas); color:var(--ink); -webkit-font-smoothing:antiali
 <!-- ============ SCREEN: HOME ============ -->
 <div id="screen-home" class="screen flex items-center justify-center p-6">
   <div class="max-w-md w-full text-center">
-    <div class="w-20 h-20 mx-auto rounded-[26px] flex items-center justify-center shadow-lg mb-4" style="background:linear-gradient(155deg,#7C5CFC,#6142E0);">
+    <div class="hero-badge w-20 h-20 mx-auto rounded-[26px] flex items-center justify-center shadow-lg mb-4" style="background:linear-gradient(155deg,#7C5CFC,#6142E0);">
       <i class="fa-solid fa-magnifying-glass text-white text-4xl"></i>
     </div>
     <h1 class="display-font text-4xl mb-1">Cluedo LAN</h1>
     <p class="text-[#6B6B76] mb-8">A mystery for the whole family — no internet needed to play</p>
 
-    <div class="bg-white rounded-3xl shadow-sm border border-[#E7E2F4] p-6 space-y-4">
+    <div class="glass rounded-3xl p-6 space-y-4">
       <input id="input-name" maxlength="16" placeholder="What's your name?" class="w-full text-center text-lg py-3 px-4 rounded-2xl border-2 border-[#E7E2F4] focus:border-[#7C5CFC] outline-none">
 
       <button onclick="startHostFlow()" class="w-full py-4 bg-[#FF5C72] text-white rounded-2xl font-semibold text-lg active:scale-[0.98] shadow-[0_8px_20px_-8px_rgba(255,92,114,.6)]">
@@ -177,7 +255,7 @@ body{ background:var(--canvas); color:var(--ink); -webkit-font-smoothing:antiali
     <p class="text-[#6B6B76] mb-1">Room code</p>
     <div id="lobby-roomcode" class="text-6xl display-font tracking-widest mb-6 text-[#21212B]">----</div>
 
-    <div class="bg-white rounded-3xl shadow-sm border border-[#E7E2F4] p-6">
+    <div class="glass rounded-3xl p-6">
       <h3 class="display-font text-lg mb-3 text-left">Detectives joining</h3>
       <div id="lobby-players" class="space-y-2 text-left mb-4"></div>
 
@@ -238,7 +316,7 @@ body{ background:var(--canvas); color:var(--ink); -webkit-font-smoothing:antiali
         <!-- Log -->
         <div class="mt-2">
           <div class="text-xs uppercase tracking-wider text-[#9A93B5] font-bold mb-1 px-1">📋 Case File</div>
-          <div id="game-log" class="bg-white border border-[#E7E2F4] rounded-2xl p-3 text-xs max-h-[120px] overflow-y-auto space-y-1"></div>
+          <div id="game-log" class="glass rounded-2xl p-3 text-xs max-h-[120px] overflow-y-auto space-y-1"></div>
         </div>
       </div>
     </div>
@@ -285,17 +363,19 @@ body{ background:var(--canvas); color:var(--ink); -webkit-font-smoothing:antiali
           </div>
           <button onclick="clearNotepad()" class="text-xs text-[#9A93B5] hover:text-[#FF5C72] font-semibold">Clear</button>
         </div>
-        <div id="notepad" class="bg-white border border-[#E7E2F4] rounded-2xl p-3 text-xs"></div>
-      </div>
-
-      <!-- Pending Disprove UI -->
-      <div id="disprove-section" class="hidden bg-white border-2 border-[#FFB020] rounded-2xl p-4">
-        <div class="font-semibold text-sm mb-2">🕵️ Disprove this suggestion:</div>
-        <div id="disprove-suggestion-text" class="text-xs mb-3 text-[#6B6B76]"></div>
-        <div class="text-xs font-semibold mb-1.5">Choose one card to show privately:</div>
-        <div id="disprove-options" class="flex flex-wrap gap-2"></div>
+        <div id="notepad" class="glass rounded-2xl p-3 text-xs"></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Disprove Modal — shown full-screen so the responder can never miss it -->
+<div id="disprove-section" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
+  <div class="modal bg-white max-w-sm w-full rounded-3xl p-5 border-2 border-[#FFB020]">
+    <div class="font-semibold text-base mb-2">🕵️ Disprove this suggestion</div>
+    <div id="disprove-suggestion-text" class="text-sm mb-4 text-[#6B6B76]"></div>
+    <div class="text-xs font-semibold mb-1.5 text-[#9A93B5]">Choose one card to show privately:</div>
+    <div id="disprove-options" class="flex flex-wrap gap-2"></div>
   </div>
 </div>
 
@@ -724,7 +804,7 @@ function handleSoundEvents(s) {
       if (entry.includes(' wins!')) Sound.gameOver();
       else if (entry.includes('Suggestion:')) Sound.click();
       else if (entry.includes('disproved')) Sound.disprove();
-      else if (entry.includes('rolled')) Sound.roll();
+      else if (entry.includes('rolled')) { Sound.roll(); triggerDicePop(); }
     }
     lastSeenLogEntry = entry;
   }
@@ -1166,6 +1246,14 @@ function closeWinnerModal() {
 /* =========================================================================
    UI: GAME
    ========================================================================= */
+function triggerDicePop() {
+  const el = document.getElementById('dice-display');
+  if (!el) return;
+  el.classList.remove('dice-pop');
+  void el.offsetWidth; // reflow so the animation can restart
+  el.classList.add('dice-pop');
+}
+
 function updateDiceDisplay(roll, remaining) {
   const el = document.getElementById('dice-display');
   if (!el) return;
@@ -1204,8 +1292,9 @@ function renderGame() {
     connectionBadge.style.color = '#2FD97C';
   }
 
-  document.getElementById('my-turn-banner').classList.toggle('hidden', !myTurn || !s.started);
-  document.getElementById('waiting-banner').classList.toggle('hidden', myTurn || !s.started);
+  const iNeedToDisprove = s.pendingDisprove && me && s.pendingDisprove.disproverId === me.clientId;
+  document.getElementById('my-turn-banner').classList.toggle('hidden', !myTurn || !s.started || iNeedToDisprove);
+  document.getElementById('waiting-banner').classList.toggle('hidden', myTurn || !s.started || iNeedToDisprove);
 
   // Enable/disable action buttons
   const canAct = myTurn && s.started;
@@ -1302,10 +1391,10 @@ function renderBoard(players) {
 
       const card = document.createElement('div');
       card.className = `room-card ${isValidMove ? 'highlight-move' : ''} ${isMyRoom ? 'current-room' : ''} ${myTurn ? 'cursor-pointer active:scale-[0.985]' : ''}`;
-      card.style.background = room.bg;
+      card.style.background = `linear-gradient(165deg, #FFFFFF 0%, ${room.bg} 55%, ${room.bg} 100%)`;
 
       let html = `
-        <div class="room-icon" style="background:${room.iconColor}26; color:${room.iconColor}"><i class="${room.icon}"></i></div>
+        <div class="room-icon" style="background:linear-gradient(150deg, ${room.iconColor}, ${room.iconColor}CC); color:#fff; box-shadow:0 3px 9px -2px ${room.iconColor}88, inset 0 1px 0 rgba(255,255,255,.4)"><i class="${room.icon}"></i></div>
         <div class="room-name">${room.name}</div>
         ${hasSecret ? `<div class="secret-passage">↔</div>` : ''}
         <div class="room-tokens"></div>
